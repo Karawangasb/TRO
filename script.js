@@ -9,7 +9,7 @@ tg.ready();
 // 🌐 Konfigurasi Supabase
 // =============================
 const SUPABASE_URL = 'https://gcylipzusxceszpvpcsb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // 🔑 GANTI DENGAN ANON KEY ANDA
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjeWxpcHp1c3hjZXN6cHZwY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NDYwNTcsImV4cCI6MjA3NDEyMjA1N30.mmuHhvu-1CSUPqJwBfss-o54YNNpXOsIFRX2QRjNO_E'; // 🔑 GANTI DENGAN ANON KEY ANDA
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // =============================
