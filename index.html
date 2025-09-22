@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taro Miner</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- SDK Telegram Web Apps -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>⛏️ Taro Miner</h1>
+    <p id="user-info">Loading...</p>
+    <div class="stats">
+      <p>Hashrate: <span id="hashrate">0</span> MH/s</p>
+      <p>TRO Tertambang: <span id="mined">0</span></p>
+      <p>Pending Reward: <span id="pending">0</span> TRO</p>
+      <p>Blok Berikutnya: <span id="next-block">00:00</span></p>
+    </div>
+    <button id="upgrade-btn">🔼 Upgrade Pickaxe (1.000 TRO)</button>
+    <button id="withdraw-btn">💼 Withdraw ke Dompet</button>
+    <button id="connect-wallet">🔗 Connect Tonkeeper</button>
+    <div id="referral-section">
+      <p>Undang Teman: <span id="ref-link">Loading...</span></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
