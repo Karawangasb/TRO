@@ -1,51 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taro Miner</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- SDK Telegram Web Apps -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- SDK Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taro Miner - Interactive</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+h2 { margin-top: 0; }
+.card { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+button { padding: 8px 12px; margin: 5px; border: none; border-radius: 5px; background-color: #007bff; color: #fff; cursor: pointer; }
+button:hover { background-color: #0056b3; }
+#output { white-space: pre-line; font-size: 14px; }
+input[type="number"] { width: 80px; padding: 5px; margin-left: 5px; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>⛏️ Taro Miner</h1>
-    <p id="user-info">Loading...</p>
 
-    <!-- STATISTIK UTAMA -->
-    <div class="stats">
-      <p>Hashrate Saya: <span id="hashrate">0</span> MH/s</p>
-      <p>Hashrate Jaringan: <span id="network-hashrate">0</span> MH/s</p>
-      <p>Blok Saat Ini: <span id="current-block">0</span></p>
-      <p>Reward per Blok: <span id="reward-per-block">190</span> TRO</p>
-      <p>TRO Tertambang: <span id="mined">0</span></p>
-      <p>Pending Reward: <span id="pending">0</span> TRO</p>
-      <p>Blok Berikutnya: <span id="next-block">00:00</span></p>
-    </div>
+<h2>Taro Miner Dashboard</h2>
 
-    <!-- AKSI GAME -->
-    <button id="upgrade-btn">🔼 Upgrade Pickaxe (1.000 TRO)</button>
-    <button id="withdraw-btn">💼 Withdraw ke Dompet</button>
-    <button id="connect-wallet">🔗 Connect Tonkeeper</button>
+<div class="card">
+  <div>Hashrate Saya: <span id="myHashrate">--</span> H/s</div>
+  <div>Hashrate Jaringan: <span id="networkHashrate">--</span> H/s</div>
+  <div>Blok Saat Ini: <span id="currentBlock">--</span></div>
+  <div>Reward per Blok: <span id="blockReward">190</span> TRO</div>
+  <div>TRO Tertambang: <span id="minedTRO">--</span> TRO</div>
+  <div>Pending Reward: <span id="pendingReward">--</span> TRO</div>
+  <div>Blok Berikutnya: <span id="nextBlock">00:00</span></div>
+</div>
 
-    <!-- REFERRAL -->
-    <div id="referral-section">
-      <p>Undang Teman: <span id="ref-link">Loading...</span></p>
-    </div>
+<div class="card">
+  <button onclick="showShop()">Shop</button>
+  <button onclick="showInventory()">Inventory</button>
+  <button onclick="claimRewards()">Claim Reward</button>
+  <button onclick="showRewardHistory()">Reward History</button>
+  <button onclick="showWithdrawForm()">Withdraw</button>
+  <button onclick="showWithdrawHistory()">Withdraw History</button>
+</div>
 
-    <!-- 🏆 LEADERBOARD -->
-    <div class="leaderboard-section">
-      <h3>🏆 Leaderboard - Top 10 Miner</h3>
-      <div id="leaderboard-list">
-        <!-- Akan diisi otomatis oleh JS -->
-        <p>Loading leaderboard...</p>
-      </div>
-    </div>
-  </div>
+<div id="output"></div>
 
-  <script src="script.js"></script>
+<script>
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzmmI1ZLHbXjU14fw0JnbGefXPTrXH0McspnWwXR7vBWempWhzYZfx4_CzFuw6Y-IqR/exec';
+let tgUser = { id: null, username: null };
+
+// Inisialisasi Telegram WebApp
+if (window.Telegram.WebApp) {
+    tgUser.id = window.Telegram.WebApp.initDataUnsafe.user.id;
+    tgUser.username = window.Telegram.WebApp.initDataUnsafe.user.username;
+    registerUser();
+}
+
+// Registrasi user baru
+async function registerUser() {
+    try {
+        const res = await fetch(`${WEBAPP_URL}?action=registerUser&telegram_id=${tgUser.id}&username=${tgUser.username}&base_hashrate=1`);
+        const data = await res.json();
+        console.log('User registered:', data);
+    } catch (err) { console.error(err); }
+}
+
+// Fungsi fetch data
+async function fetchData(action, params = {}) {
+    const url = new URL(WEBAPP_URL);
+    url.searchParams.append('action', action);
+    for (const key in params) url.searchParams.append(key, params[key]);
+    const res = await fetch(url);
+    return res.json();
+}
+
+// Format waktu mm:ss
+function formatTime(sec) {
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = (sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+}
+
+// Update dashboard
+async function updateDashboard() {
+    const balance = await fetchData('getBalance', { telegram_id: tgUser.id });
+    document.getElementById('myHashrate').textContent = balance.effective_hashrate;
+    document.getElementById('networkHashrate').textContent = balance.network_hashrate;
+    document.getElementById('currentBlock').textContent = balance.current_block;
+    document.getElementById('minedTRO').textContent = balance.total_claimed;
+    document.getElementById('pendingReward').textContent = balance.unclaimed_balance;
+    const nextBlockTime = 600 - (balance.seconds_since_last_block % 600);
+    document.getElementById('nextBlock').textContent = formatTime(nextBlockTime);
+}
+
+// SHOP INTERAKTIF
+async function showShop() {
+    const items = await fetchData('listShop');
+    let output = '=== SHOP ===\n';
+    items.forEach(i => {
+        output += `${i.item_name} (+${i.bonus_hashrate} H/s) - ${i.price} TRO `;
+        output += `<button onclick="buyItem(${i.item_id},1)">BUY</button>\n`;
+    });
+    document.getElementById('output').innerHTML = output.replace(/\n/g,'<br>');
+}
+
+async function buyItem(item_id, qty) {
+    const res = await fetchData('buyItem', { telegram_id: tgUser.id, item_id, qty });
+    alert(res.message || 'Item purchased!');
+    updateDashboard();
+    showInventory();
+}
+
+// INVENTORY
+async function showInventory() {
+    const inv = await fetchData('listInventory', { telegram_id: tgUser.id });
+    let output = '=== INVENTORY ===\n';
+    inv.forEach(i => output += `${i.item_name} x${i.qty} (+${i.bonus_hashrate} H/s)<br>`);
+    document.getElementById('output').innerHTML = output;
+}
+
+// CLAIM REWARD
+async function claimRewards() {
+    const res = await fetchData('claimReward', { telegram_id: tgUser.id });
+    alert(res.message || 'Reward claimed!');
+    updateDashboard();
+}
+
+// REWARD HISTORY
+async function showRewardHistory() {
+    const history = await fetchData('getRewardHistory', { telegram_id: tgUser.id });
+    let output = '=== REWARD HISTORY ===\n';
+    history.forEach(h => output += `Block ${h.block_number}: +${h.reward} TRO<br>`);
+    document.getElementById('output').innerHTML = output;
+}
+
+// WITHDRAW FORM
+function showWithdrawForm() {
+    const html = `
+    <b>Request Withdraw</b><br>
+    Amount: <input type="number" id="withdrawAmount" value="1000000"><button onclick="requestWithdraw()">Submit</button>
+    `;
+    document.getElementById('output').innerHTML = html;
+}
+
+async function requestWithdraw() {
+    const amount = document.getElementById('withdrawAmount').value;
+    const res = await fetchData('withdraw', { telegram_id: tgUser.id, amount });
+    alert(res.message || 'Withdraw request submitted!');
+    updateDashboard();
+    showWithdrawHistory();
+}
+
+// WITHDRAW HISTORY
+async function showWithdrawHistory() {
+    const history = await fetchData('getWithdrawHistory', { telegram_id: tgUser.id });
+    let output = '=== WITHDRAW HISTORY ===<br>';
+    history.forEach(w => output += `${w.timestamp} - ${w.amount} TRO - ${w.status}<br>`);
+    document.getElementById('output').innerHTML = output;
+}
+
+// Auto refresh dashboard setiap 10 detik
+setInterval(updateDashboard, 10000);
+updateDashboard();
+</script>
+
 </body>
-      </html>
+</html>
