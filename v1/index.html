@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taro Mining Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h1 { color: #0d7a8c; text-align: center; }
+    .card {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      background: #0d7a8c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #0b5e6e; }
+    .btn-danger { background: #e74c3c; }
+    .btn-success { background: #2ecc71; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    .loading { color: #666; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⛏️ Taro Mining Game</h1>
+
+    <!-- User Info -->
+    <div class="card">
+      <h3>👤 Profile</h3>
+      <p><strong>ID:</strong> <span id="telegramId">Loading...</span></p>
+      <p><strong>Wallet:</strong> <span id="wallet">Loading...</span></p>
+      <p><strong>Hashrate:</strong> <span id="hashrate">Loading...</span> H/s</p>
+      <p><strong>Balance:</strong> <span id="balance">Loading...</span> TRO</p>
+      <p><strong>Claimed:</strong> <span id="claimed">Loading...</span> TRO</p>
+      <button onclick="claimReward()">✅ Claim Reward</button>
+    </div>
+
+    <!-- Shop -->
+    <div class="card">
+      <h3>🛒 Shop</h3>
+      <table id="shopTable"></table>
+      <p><small>Use TRO to buy mining tools</small></p>
+    </div>
+
+    <!-- Inventory -->
+    <div class="card">
+      <h3>📦 Inventory</h3>
+      <table id="inventoryTable"></table>
+    </div>
+
+    <!-- Withdraw -->
+    <div class="card">
+      <h3>📤 Withdraw</h3>
+      <p>Wallet: <input type="text" id="withdrawWallet" placeholder="Enter wallet address" /></p>
+      <p>Amount: <input type="number" id="withdrawAmount" min="0.1" step="0.01" /></p>
+      <button onclick="requestWithdraw()">Request Withdraw</button>
+    </div>
+
+    <!-- Rewards History -->
+    <div class="card">
+      <h3>🎁 Reward History</h3>
+      <table id="rewardsTable"></table>
+    </div>
+
+    <!-- Withdraw History -->
+    <div class="card">
+      <h3>💸 Withdraw History</h3>
+      <table id="withdrawsTable"></table>
+    </div>
+  </div>
+
+  <script>
+    // --- Variabel Global ---
+    const telegramId = getQueryParam('id') || '111111'; // Ganti dengan ID user dari Telegram
+    const apiUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // Ganti dengan ID script kamu
+
+    // --- Fungsi Helper ---
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    function callApi(func, params = {}) {
+      const data = { func, ...params };
+      return fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(res => res.json());
+    }
+
+    // --- Load Data ---
+    async function loadUserData() {
+      const data = await callApi('getBalance', { telegramId });
+      document.getElementById('telegramId').textContent = data.telegram_id;
+      document.getElementById('wallet').textContent = data.wallet;
+      document.getElementById('hashrate').textContent = data.effective_hashrate.toFixed(2);
+      document.getElementById('balance').textContent = data.unclaimed_balance.toFixed(6);
+      document.getElementById('claimed').textContent = data.total_claimed.toFixed(6);
+    }
+
+    async function loadShop() {
+      const items = await callApi('listShop');
+      const table = document.getElementById('shopTable');
+      table.innerHTML = '<tr><th>Name</th><th>Hashrate</th><th>Price</th><th>Action</th></tr>';
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.item_name}</td>
+          <td>${item.bonus_hashrate} H/s</td>
+          <td>${item.price} TRO</td>
+          <td><button onclick="buyItem(${item.item_id})">Buy</button></td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    async function loadInventory() {
+      const items = await callApi('listInventory', { telegramId });
+      const table = document.getElementById('inventoryTable');
+      table.innerHTML = '<tr><th>Item</th><th>Qty</th><th>Hashrate</th></tr>';
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.item_name}</td>
+          <td>${item.qty}</td>
+          <td>${item.bonus_hashrate * item.qty} H/s</td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    async function loadRewardsHistory() {
+      const rewards = await callApi('getRewardHistory', { telegramId });
+      const table = document.getElementById('rewardsTable');
+      table.innerHTML = '<tr><th>Block</th><th>Reward</th><th>Date</th></tr>';
+      rewards.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.block_number}</td>
+          <td>${r.reward.toFixed(6)} TRO</td>
+          <td>${new Date(r.timestamp).toLocaleString()}</td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    async function loadWithdrawsHistory() {
+      const withdraws = await callApi('getWithdrawHistory', { telegramId });
+      const table = document.getElementById('withdrawsTable');
+      table.innerHTML = '<tr><th>Amount</th><th>Status</th><th>Date</th><th>TX Hash</th></tr>';
+      withdraws.forEach(w => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${w.amount} TRO</td>
+          <td><span style="color:${w.status === 'completed' ? 'green' : w.status === 'pending' ? 'orange' : 'red'}">${w.status}</span></td>
+          <td>${new Date(w.timestamp).toLocaleString()}</td>
+          <td>${w.txHash || '-'}</td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    // --- Aksi User ---
+    async function claimReward() {
+      const result = await callApi('claimReward', { telegramId });
+      if (result.success) {
+        alert("✅ Reward claimed successfully!");
+        loadUserData();
+      } else {
+        alert("❌ Failed: " + result.error);
+      }
+    }
+
+    async function buyItem(itemId) {
+      const result = await callApi('buyItem', { telegramId, itemId });
+      if (result.success) {
+        alert("✅ Item purchased!");
+        loadUserData();
+        loadInventory();
+        loadShop();
+      } else {
+        alert("❌ Failed: " + result.error);
+      }
+    }
+
+    async function requestWithdraw() {
+      const wallet = document.getElementById('withdrawWallet').value;
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      if (!wallet || !amount || amount <= 0) {
+        alert("Please fill all fields!");
+        return;
+      }
+      const result = await callApi('withdraws', { telegramId, wallet, amount });
+      if (result.success) {
+        alert("✅ Withdraw request sent!");
+        loadWithdrawsHistory();
+      } else {
+        alert("❌ Error: " + result.error);
+      }
+    }
+
+    // --- Inisialisasi ---
+    window.onload = async () => {
+      await loadUserData();
+      await loadShop();
+      await loadInventory();
+      await loadRewardsHistory();
+      await loadWithdrawsHistory();
+    };
+  </script>
+</body>
+</html>
