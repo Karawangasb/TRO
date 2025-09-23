@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taro Miner - Interactive</title>
+<title>Taro Miner Dashboard</title>
 <style>
 body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
 h2 { margin-top: 0; }
@@ -11,7 +11,6 @@ h2 { margin-top: 0; }
 button { padding: 8px 12px; margin: 5px; border: none; border-radius: 5px; background-color: #007bff; color: #fff; cursor: pointer; }
 button:hover { background-color: #0056b3; }
 #output { white-space: pre-line; font-size: 14px; }
-input[type="number"] { width: 80px; padding: 5px; margin-left: 5px; }
 </style>
 </head>
 <body>
@@ -22,10 +21,8 @@ input[type="number"] { width: 80px; padding: 5px; margin-left: 5px; }
   <div>Hashrate Saya: <span id="myHashrate">--</span> H/s</div>
   <div>Hashrate Jaringan: <span id="networkHashrate">--</span> H/s</div>
   <div>Blok Saat Ini: <span id="currentBlock">--</span></div>
-  <div>Reward per Blok: <span id="blockReward">190</span> TRO</div>
   <div>TRO Tertambang: <span id="minedTRO">--</span> TRO</div>
   <div>Pending Reward: <span id="pendingReward">--</span> TRO</div>
-  <div>Blok Berikutnya: <span id="nextBlock">00:00</span></div>
 </div>
 
 <div class="card">
@@ -40,26 +37,27 @@ input[type="number"] { width: 80px; padding: 5px; margin-left: 5px; }
 <div id="output"></div>
 
 <script>
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzmmI1ZLHbXjU14fw0JnbGefXPTrXH0McspnWwXR7vBWempWhzYZfx4_CzFuw6Y-IqR/exec';
+const WEBAPP_URL = 'https://script.google.com/macros/s/YOUR_WEBAPP_ID/exec';
 let tgUser = { id: null, username: null };
 
-// Inisialisasi Telegram WebApp
+// Ambil data Telegram WebApp
 if (window.Telegram.WebApp) {
     tgUser.id = window.Telegram.WebApp.initDataUnsafe.user.id;
     tgUser.username = window.Telegram.WebApp.initDataUnsafe.user.username;
-    registerUser();
+    registerUser(); // otomatis registrasi saat buka
 }
 
 // Registrasi user baru
 async function registerUser() {
     try {
-        const res = await fetch(`${WEBAPP_URL}?action=registerUser&telegram_id=${tgUser.id}&username=${tgUser.username}&base_hashrate=1`);
-        const data = await res.json();
-        console.log('User registered:', data);
-    } catch (err) { console.error(err); }
+        await fetch(`${WEBAPP_URL}?action=registerUser&telegram_id=${tgUser.id}&username=${tgUser.username}&base_hashrate=1`);
+        updateDashboard(); // langsung tampilkan dashboard setelah registrasi
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-// Fungsi fetch data
+// Fetch data dari Apps Script
 async function fetchData(action, params = {}) {
     const url = new URL(WEBAPP_URL);
     url.searchParams.append('action', action);
@@ -68,36 +66,33 @@ async function fetchData(action, params = {}) {
     return res.json();
 }
 
-// Format waktu mm:ss
-function formatTime(sec) {
-    const m = Math.floor(sec/60).toString().padStart(2,'0');
-    const s = (sec%60).toString().padStart(2,'0');
-    return `${m}:${s}`;
-}
-
 // Update dashboard
 async function updateDashboard() {
-    const balance = await fetchData('getBalance', { telegram_id: tgUser.id });
-    document.getElementById('myHashrate').textContent = balance.effective_hashrate;
-    document.getElementById('networkHashrate').textContent = balance.network_hashrate;
-    document.getElementById('currentBlock').textContent = balance.current_block;
-    document.getElementById('minedTRO').textContent = balance.total_claimed;
-    document.getElementById('pendingReward').textContent = balance.unclaimed_balance;
-    const nextBlockTime = 600 - (balance.seconds_since_last_block % 600);
-    document.getElementById('nextBlock').textContent = formatTime(nextBlockTime);
+    try {
+        // Ambil data user
+        const user = await fetchData('getUser', { telegram_id: tgUser.id });
+        const network = await fetchData('getNetworkHashrate');
+        const currentBlockData = await fetchData('getCurrentBlock');
+        
+        document.getElementById('myHashrate').textContent = user.effective_hashrate;
+        document.getElementById('networkHashrate').textContent = network.total_hashrate;
+        document.getElementById('currentBlock').textContent = currentBlockData.block_number + 1;
+        document.getElementById('minedTRO').textContent = user.total_claimed;
+        document.getElementById('pendingReward').textContent = user.unclaimed_balance;
+    } catch(err) {
+        console.error(err);
+    }
 }
 
-// SHOP INTERAKTIF
+// Shop
 async function showShop() {
     const items = await fetchData('listShop');
-    let output = '=== SHOP ===\n';
-    items.forEach(i => {
-        output += `${i.item_name} (+${i.bonus_hashrate} H/s) - ${i.price} TRO `;
-        output += `<button onclick="buyItem(${i.item_id},1)">BUY</button>\n`;
-    });
-    document.getElementById('output').innerHTML = output.replace(/\n/g,'<br>');
+    let output = '=== SHOP ===<br>';
+    items.forEach(i => output += `${i.item_name} (+${i.bonus_hashrate} H/s) - ${i.price} TRO <button onclick="buyItem(${i.item_id},1)">BUY</button><br>`);
+    document.getElementById('output').innerHTML = output;
 }
 
+// Buy item
 async function buyItem(item_id, qty) {
     const res = await fetchData('buyItem', { telegram_id: tgUser.id, item_id, qty });
     alert(res.message || 'Item purchased!');
@@ -105,38 +100,36 @@ async function buyItem(item_id, qty) {
     showInventory();
 }
 
-// INVENTORY
+// Inventory
 async function showInventory() {
     const inv = await fetchData('listInventory', { telegram_id: tgUser.id });
-    let output = '=== INVENTORY ===\n';
+    let output = '=== INVENTORY ===<br>';
     inv.forEach(i => output += `${i.item_name} x${i.qty} (+${i.bonus_hashrate} H/s)<br>`);
     document.getElementById('output').innerHTML = output;
 }
 
-// CLAIM REWARD
+// Claim reward
 async function claimRewards() {
     const res = await fetchData('claimReward', { telegram_id: tgUser.id });
     alert(res.message || 'Reward claimed!');
     updateDashboard();
 }
 
-// REWARD HISTORY
+// Reward history
 async function showRewardHistory() {
     const history = await fetchData('getRewardHistory', { telegram_id: tgUser.id });
-    let output = '=== REWARD HISTORY ===\n';
+    let output = '=== REWARD HISTORY ===<br>';
     history.forEach(h => output += `Block ${h.block_number}: +${h.reward} TRO<br>`);
     document.getElementById('output').innerHTML = output;
 }
 
-// WITHDRAW FORM
+// Withdraw form
 function showWithdrawForm() {
-    const html = `
-    <b>Request Withdraw</b><br>
-    Amount: <input type="number" id="withdrawAmount" value="1000000"><button onclick="requestWithdraw()">Submit</button>
-    `;
+    const html = `Amount: <input type="number" id="withdrawAmount" value="1000000"><button onclick="requestWithdraw()">Submit</button>`;
     document.getElementById('output').innerHTML = html;
 }
 
+// Request withdraw
 async function requestWithdraw() {
     const amount = document.getElementById('withdrawAmount').value;
     const res = await fetchData('withdraw', { telegram_id: tgUser.id, amount });
@@ -145,7 +138,7 @@ async function requestWithdraw() {
     showWithdrawHistory();
 }
 
-// WITHDRAW HISTORY
+// Withdraw history
 async function showWithdrawHistory() {
     const history = await fetchData('getWithdrawHistory', { telegram_id: tgUser.id });
     let output = '=== WITHDRAW HISTORY ===<br>';
@@ -156,6 +149,7 @@ async function showWithdrawHistory() {
 // Auto refresh dashboard setiap 10 detik
 setInterval(updateDashboard, 10000);
 updateDashboard();
+
 </script>
 
 </body>
