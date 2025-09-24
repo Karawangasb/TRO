@@ -1,7 +1,17 @@
 // Data yang sering berubah: voucher, konversi, biaya upgrade, dll.
 const GAME_CONFIG = {
-    POINTS_PER_CLICK_BASE: 1,
-    UPGRADE_COST_BASE: 10, // level * UPGRADE_COST_BASE
+    getPointsPerClick(level) {
+        if (level <= 0) return 1;
+        // Formula C: log + linear → naik lambat
+        return Math.floor(Math.log(level + 1) * 5 + level * 0.5);
+    },
+
+    getUpgradeCost(level) {
+        if (level <= 0) return 15;
+        // Formula C: eksponensial 1.6x → biaya naik cepat
+        return Math.max(15, Math.floor(15 * Math.pow(1.6, level - 1)));
+    },
+
     REDEEM_RATE: 100, // 100 POIN = 1 TRO
 
     VALID_VOUCHERS: {
