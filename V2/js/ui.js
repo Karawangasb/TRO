@@ -37,6 +37,10 @@ function renderHistory() {
 }
 
 function updateUI() {
+    // ✅ Pastikan level selalu valid (antisipasi data rusak)
+    level = parseInt(level) || 1;
+    pointsPerClick = GAME_CONFIG.getPointsPerClick(level);
+
     // Update semua elemen UI
     document.getElementById('points').textContent = points;
     document.getElementById('level').textContent = level;
@@ -65,10 +69,17 @@ function updateUI() {
     if (current > taroTokens) current = taroTokens || 1;
     withdrawAmountInput.value = current;
 
-    // Tombol
-    const upgradeCost = level * GAME_CONFIG.UPGRADE_COST_BASE;
-    document.getElementById('upgradeBtn').textContent = `Upgrade Pickaxe (${upgradeCost} POIN)`;
-    document.getElementById('upgradeBtn').disabled = points < upgradeCost;
+    // 🔸 Tombol UPGRADE — GUNAKAN FUNGSI BARU
+    const upgradeCost = GAME_CONFIG.getUpgradeCost(level);
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    if (upgradeBtn) {
+        // Tampilkan "???" jika terjadi error (tapi seharusnya tidak)
+        const displayCost = isNaN(upgradeCost) ? '???' : upgradeCost;
+        upgradeBtn.textContent = `Upgrade Pickaxe (${displayCost} POIN)`;
+        upgradeBtn.disabled = isNaN(upgradeCost) || points < upgradeCost;
+    }
+
+    // Tombol lain
     document.getElementById('redeemBtn').disabled = points < GAME_CONFIG.REDEEM_RATE;
     document.getElementById('requestWithdrawBtn').disabled = taroTokens < 1;
 
