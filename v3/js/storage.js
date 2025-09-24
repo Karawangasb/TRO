@@ -1,63 +1,52 @@
-// === KONFIGURASI ===
-const API_URL = "https://script.google.com/macros/s/AKfycbyIJwGDy005Me3FnWHHsQOcpfpbNU_MfK93h2tbnLGStYxWif5YPvVUT0-7tWK4uR4i/exec"; // ganti dengan URL Apps Script WebApp kamu
-const tg = window.Telegram.WebApp;
-tg.expand(); // biar fullscreen
+const API_URL = "https://script.google.com/macros/s/AKfycbyIJwGDy005Me3FnWHHsQOcpfpbNU_MfK93h2tbnLGStYxWif5YPvVUT0-7tWK4uR4i/exec";
 
-// Ambil userId Telegram
-const telegramUserId = tg.initDataUnsafe?.user?.id || null;
-const telegramUsername = tg.initDataUnsafe?.user?.username || "Guest";
+let telegramUserId = null;
+let points = 0;
+let level = 1;
+let pointsPerClick = 1;
+let taroTokens = 0;
+let withdrawnTaro = 0;
+let totalClicks = 0;
+let totalPointsEarned = 0;
+let withdrawalHistory = [];
+let tonAddress = "";
 
-// === FUNGSI LOAD DATA ===
-async function loadFromStorage() {
-    if (!telegramUserId) {
-        console.error("Gagal ambil Telegram userId");
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_URL}?action=getUser&userid=${telegramUserId}`);
-        const data = await res.json();
-
-        if (data && data.userid) {
-            // Isi variabel game dari database
-            points = Number(data.points) || 0;
-            level = Number(data.lv) || 1;
-            pointsPerClick = GAME_CONFIG.getPointsPerClick(level);
-            taroTokens = Number(data.tokens) || 0;
-            withdrawnTaro = 0; // bisa diambil dari kolom jika ada
-            totalClicks = 0;   // tambahkan ke DB jika mau
-            totalPointsEarned = 0;
-            withdrawalHistory = data.withdrawHistory ? JSON.parse(data.withdrawHistory) : [];
-            tonAddress = data.wallet || '';
-        } else {
-            console.log("User baru, data kosong");
-        }
-    } catch (err) {
-        console.error("Error loadFromStorage:", err);
-    }
-}
-
-// === FUNGSI SAVE DATA ===
-async function saveToStorage() {
+// Simpan data ke Google Sheets
+function saveToStorage() {
     if (!telegramUserId) return;
 
-    const payload = {
+    const data = {
         action: "saveUser",
-        userid: telegramUserId,
-        lv: level,
+        userId: telegramUserId,
+        level,
         wallet: tonAddress,
         points,
         tokens: taroTokens,
-        withdrawHistory: JSON.stringify(withdrawalHistory)
+        withdrawnTaro,
+        totalClicks,
+        totalPointsEarned,
+        withdrawalHistory: JSON.stringify(withdrawalHistory)
     };
 
-    try {
-        await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: { "Content-Type": "application/json" }
-        });
-    } catch (err) {
-        console.error("Error saveToStorage:", err);
-    }
+    fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors", // 🔸 bypass CORS, tapi tidak bisa baca response
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    }).catch(err => console.error("Error saveToStorage:", err));
+}
+
+// Ambil data user dari Sheets (sementara skip, karena no-cors tidak bisa baca)
+function loadFromStorage() {
+    console.log("⚠️ loadFromStorage belum bisa jalan (butuh proxy / Apps Script tweak)");
+    // Untuk tes, sementara pakai default
+    points = 0;
+    level = 1;
+    pointsPerClick = 1;
+    taroTokens = 0;
+    withdrawnTaro = 0;
+    totalClicks = 0;
+    totalPointsEarned = 0;
+    withdrawalHistory = [];
+    tonAddress = "";
 }
