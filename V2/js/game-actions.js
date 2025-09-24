@@ -11,11 +11,11 @@ function mineCell(cell) {
 }
 
 function upgradePickaxe() {
-    const cost = level * GAME_CONFIG.UPGRADE_COST_BASE;
+    const cost = GAME_CONFIG.getUpgradeCost(level);
     if (points >= cost) {
         points -= cost;
         level++;
-        pointsPerClick = level;
+        pointsPerClick = GAME_CONFIG.getPointsPerClick(level); 
         resetMineGrid();
         updateUI();
     }
