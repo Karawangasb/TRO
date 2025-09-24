@@ -1,235 +1,523 @@
-/* =======================
-   Global Styles
-======================= */
-body {
-    font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: #f1f5f9;
+style.css  sebelunya
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-}
-
-h1, h2, h3 {
-    text-align: center;
-    margin: 10px 0;
-}
-
-button {
-    background: #2563eb;
+    padding: 15px;
     color: white;
-    border: none;
-    padding: 10px 14px;
-    margin: 6px 0;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.2s;
 }
 
-button:hover {
-    background: #1d4ed8;
-}
-
-button:disabled {
-    background: #6b7280;
-    cursor: not-allowed;
-}
-
-input {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #475569;
-    width: 100%;
-    margin: 6px 0;
-}
-
-/* =======================
-   Game Container
-======================= */
 .game-container {
-    width: 95%;
-    max-width: 450px;
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    background: rgba(10, 10, 20, 0.92);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    width: 100%;
+    max-width: 700px;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 85vh;
 }
 
-/* =======================
-   Pages
-======================= */
+.cell {
+    aspect-ratio: 1;
+    background: #2a2a4a;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    transition: all 0.2s;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+    overflow: hidden; /* penting: agar gambar tidak keluar dari batas */
+}
+
+/* Atur gambar agar pas di dalam sel */
+.cell img {
+    width: 60%;       /* Lebar 60% dari kotak */
+    height: auto;     /* Jaga rasio asli */
+    max-height: 60%;  /* Batas tinggi maksimal */
+    object-fit: contain; /* Pastikan gambar tidak terpotong */
+    pointer-events: none; /* Agar klik tetap ke sel, bukan gambarnya */
+    transition: transform 0.2s;
+}
+
+
+/* Halaman */
 .page {
     display: none;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .page.active {
     display: block;
+    animation: fadeIn 0.4s ease;
 }
 
-/* =======================
-   Stats
-======================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1, h2, h3 {
+    margin-bottom: 15px;
+    color: #ffcc00;
+    text-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+}
+
+h1 {
+    font-size: 2.2rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
 .stats {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    justify-content: center;
+    gap: 25px;
+    margin: 15px 0 25px;
+    font-size: 1.15rem;
 }
 
-.stat {
-    background: #334155;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.label {
-    font-weight: bold;
+.stat .label {
+    color: #aaa;
     margin-right: 6px;
 }
 
-/* =======================
-   Mine Area Grid
-======================= */
 .mine-area {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    grid-gap: 8px;
-    margin: 14px 0;
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 420px;
 }
 
-.mine-cell {
-    background: #475569;
-    border-radius: 8px;
-    height: 55px;
+.cell {
+    aspect-ratio: 1;
+    background: #2a2a4a;
+    border-radius: 10px;
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 22px;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
+    font-size: 1.4rem;
+    transition: all 0.2s;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
-.mine-cell:hover {
-    background: #64748b;
+.cell:hover {
+    background: #35355a;
     transform: scale(1.05);
 }
 
-/* =======================
-   Controls
-======================= */
-.controls {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
+.cell.mined {
+    background: #1a4a1a;
+    color: #aaffaa;
 }
 
-.instructions {
-    font-size: 13px;
+.controls, .redeem-controls, .withdraw-controls {
+    margin: 25px 0;
     text-align: center;
-    color: #cbd5e1;
 }
 
-/* =======================
-   Submenu & Info
-======================= */
+button {
+    background: linear-gradient(to right, #ff416c, #ff4b2b);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+/* Submenu Buttons */
 .submenu-buttons {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 15px;
+    margin: 30px auto;
+    max-width: 350px;
 }
 
 .submenu-btn {
+    padding: 16px;
+    font-size: 1.1rem;
+    border-radius: 15px;
+}
+
+/* Halaman Tukar & Penarikan */
+.redeem-info, .withdraw-info {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+.redeem-info p, .withdraw-info p {
+    margin: 10px 0;
+}
+
+#redeemMessage {
+    margin-top: 15px;
+    min-height: 24px;
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+/* Input Alamat TON & Jumlah */
+.ton-address-input, .withdraw-amount {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 15px;
+    border-radius: 15px;
+    margin: 15px auto;
+    max-width: 450px;
+    text-align: left;
+}
+
+.ton-address-input label, .withdraw-amount label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+#tonAddress, #withdrawAmount {
     width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #555;
+    background: #222;
+    color: white;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
 }
 
-/* =======================
-   Withdraw & Voucher
-======================= */
+#tonAddress::placeholder, #withdrawAmount::placeholder {
+    color: #666;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+#tonAddress:focus, #withdrawAmount:focus {
+    outline: none;
+    border-color: #ff4b2b;
+    box-shadow: 0 0 0 2px rgba(255, 75, 43, 0.3);
+}
+
 .ton-hint, .amount-hint {
-    font-size: 12px;
-    color: #94a3b8;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #aaa;
 }
 
+.amount-hint {
+    text-align: right;
+    margin-top: 5px;
+}
+
+/* Halaman Statistik */
+.stats-detail {
+    background: rgba(30, 30, 50, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 450px;
+    line-height: 1.7;
+}
+
+.stats-detail p {
+    margin: 12px 0;
+}
+
+/* Halaman Tentang */
+.about-content {
+    background: rgba(30, 30, 50, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 500px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.about-content ul {
+    margin-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.about-content li {
+    margin: 8px 0;
+}
+
+/* Halaman Riwayat */
 .history-list {
-    background: #334155;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 14px;
+    background: rgba(30, 30, 50, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 500px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.history-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-date {
+    color: #aaa;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.history-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #ffcc00;
+    text-align: right;
+    word-break: break-all;
+}
+
+#noHistory {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+/* Halaman Voucher */
+.voucher-info {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 450px;
+    line-height: 1.5;
 }
 
 .voucher-input {
     display: flex;
-    gap: 6px;
-    margin: 8px 0;
+    gap: 10px;
+    margin: 15px 0;
 }
 
-/* =======================
-   Stats Page
-======================= */
-.stats-detail p {
-    background: #334155;
-    padding: 6px 10px;
-    margin: 4px 0;
-    border-radius: 6px;
-    font-size: 14px;
+#voucherCode {
+    flex: 1;
+    padding: 12px;
+    border-radius: 30px;
+    border: 1px solid #555;
+    background: #222;
+    color: white;
+    font-size: 1rem;
 }
 
-/* =======================
-   Modal
-======================= */
+#voucherCode::placeholder {
+    color: #666;
+}
+
+#voucherMessage {
+    margin-top: 10px;
+    min-height: 24px;
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+.voucher-examples {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+    font-size: 0.95rem;
+}
+
+.voucher-examples code {
+    background: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #ffcc00;
+    font-family: 'Courier New', monospace;
+}
+
+/* Modal Konfirmasi */
 .modal {
     display: none;
     position: fixed;
-    z-index: 10;
+    z-index: 100;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.85);
-    justify-content: center;
-    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .modal-content {
-    background: #1e293b;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 320px;
+    background: rgba(20, 20, 40, 0.95);
+    margin: 15% auto;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
     text-align: center;
+    border: 1px solid #ff4b2b;
+}
+
+.confirm-address {
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.confirm-address-text {
+    color: #ffcc00;
+    display: block;
+    margin-top: 5px;
+    word-break: break-all;
 }
 
 .modal-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 12px;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
 }
 
-/* =======================
-   Bottom Menu
-======================= */
+.modal-buttons button {
+    flex: 1;
+    padding: 12px;
+}
+
+#confirmYes {
+    background: linear-gradient(to right, #00c853, #009624);
+}
+
+#confirmNo {
+    background: linear-gradient(to right, #666, #333);
+}
+
+/* Menu Bawah */
 .bottom-menu {
     display: flex;
     justify-content: space-around;
-    background: #0f172a;
-    padding: 8px;
-    border-radius: 12px;
-    margin-top: 14px;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
 }
 
 .nav-btn {
+    background: #2c2c4a;
+    color: #e0e0ff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 0;
+    font-weight: bold;
+    cursor: pointer;
     flex: 1;
-    margin: 0 4px;
-    padding: 8px;
-    border-radius: 8px;
-    font-size: 14px;
-    background: #334155;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.nav-btn:hover {
+    background: #3a3a6a;
 }
 
 .nav-btn.active {
-    background: #2563eb;
+    background: linear-gradient(to right, #ff416c, #ff4b2b);
     color: white;
+}
+
+.instructions {
+    margin: 15px 0;
+    color: #bbb;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Responsif */
+@media (max-width: 500px) {
+    .mine-area {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 280px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .bottom-menu {
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        padding: 10px 5px;
+        font-size: 0.8rem;
+    }
+
+    .submenu-buttons {
+        max-width: 100%;
+    }
+
+    .voucher-input {
+        flex-direction: column;
+    }
+
+    #tonAddress, #withdrawAmount {
+        font-size: 0.9rem;
+    }
+
+    .history-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .history-address {
+        text-align: left;
+    }
 }
