@@ -1,4 +1,5 @@
-// State Game (global, tapi terpusat)
+// State Game (global, pusat di sini)
+let telegramUserId = null;
 let points = 0;
 let level = 1;
 let pointsPerClick = GAME_CONFIG.POINTS_PER_CLICK_BASE;
@@ -7,7 +8,7 @@ let withdrawnTaro = 0;
 let totalClicks = 0;
 let totalPointsEarned = 0;
 let withdrawalHistory = [];
-let tonAddress = '';
+let tonAddress = "";
 
 // Reset grid
 function resetMineGrid() {
@@ -15,7 +16,7 @@ function resetMineGrid() {
     cells.forEach(cell => {
         cell.dataset.mined = 'false';
         cell.classList.remove('mined');
-        cell.innerHTML = '<img src="img/axe.png" alt="Pickaxe">'
+        cell.innerHTML = '<img src="img/axe.png" alt="Pickaxe">';
     });
 }
 
