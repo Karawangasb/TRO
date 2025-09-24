@@ -77,7 +77,17 @@ function processWithdrawal() {
     updateUI();
     renderHistory();
 }
-
+// Di akhir file main.js
+document.getElementById('refreshGridBtn').addEventListener('click', () => {
+    const cost = GAME_CONFIG.REFRESH_GRID_COST;
+    if (points >= cost) {
+        points -= cost;
+        resetMineGrid();
+        updateUI();
+    } else {
+        alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
+    }
+});
 // Inisialisasi
 loadFromStorage();
 initMineGrid();
