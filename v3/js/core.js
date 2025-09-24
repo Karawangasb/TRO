@@ -1,15 +1,3 @@
-// State Game (global, pusat di sini)
-let telegramUserId = null;
-let points = 0;
-let level = 1;
-let pointsPerClick = GAME_CONFIG.POINTS_PER_CLICK_BASE;
-let taroTokens = 0;
-let withdrawnTaro = 0;
-let totalClicks = 0;
-let totalPointsEarned = 0;
-let withdrawalHistory = [];
-let tonAddress = "";
-
 // Reset grid
 function resetMineGrid() {
     const cells = document.querySelectorAll('.cell');
@@ -32,4 +20,33 @@ function initMineGrid() {
         cell.addEventListener('click', () => mineCell(cell));
         mineAreaEl.appendChild(cell);
     }
+}
+
+// Contoh logika click (disederhanakan)
+function mineCell(cell) {
+    if (cell.dataset.mined === 'true') return;
+
+    cell.dataset.mined = 'true';
+    cell.classList.add('mined');
+    cell.innerHTML = "⛏️";
+
+    points += pointsPerClick;
+    totalClicks++;
+    totalPointsEarned += pointsPerClick;
+
+    updateUI();
+    saveToStorage();
+}
+
+// Placeholder UI
+function updateUI() {
+    document.getElementById('points').innerText = points;
+    document.getElementById('tokens').innerText = taroTokens;
+}
+
+function renderHistory() {
+    const list = document.getElementById('withdrawHistory');
+    list.innerHTML = withdrawalHistory.map(w => 
+        `<li>${w.date} - ${w.amount} TRO → ${w.address}</li>`
+    ).join('');
 }
