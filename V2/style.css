@@ -29,16 +29,16 @@ body {
 }
 
 .cell img {
-    width: 70%;
+    width: 55%;
     height: auto;
-    display: block;
-    margin: 0 auto;
-    pointer-events: none; /* agar klik tetap ke sel, bukan gambarnya */
+    max-height: 55%;
+    object-fit: contain;
+    pointer-events: none;
     transition: transform 0.2s;
 }
 
 .cell:hover img {
-    transform: scale(1.1);
+    transform: scale(1.12);
 }
 
 /* Halaman */
