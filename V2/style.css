@@ -28,6 +28,19 @@ body {
     min-height: 85vh;
 }
 
+.cell img {
+    width: 70%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    pointer-events: none; /* agar klik tetap ke sel, bukan gambarnya */
+    transition: transform 0.2s;
+}
+
+.cell:hover img {
+    transform: scale(1.1);
+}
+
 /* Halaman */
 .page {
     display: none;
