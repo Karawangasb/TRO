@@ -1,36 +1,33 @@
 // main.js
-document.addEventListener("DOMContentLoaded", () => {
-  // init storage + UI + grid
-  if (typeof loadFromStorage === "function") loadFromStorage();
-  if (typeof initMineGrid === "function") initMineGrid();
-  if (typeof updateUI === "function") updateUI();
 
-  // safe attach listeners (only if element exists)
-  const attach = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+window.addEventListener('DOMContentLoaded', () => {
+  // ===================== INIT =====================
+  loadFromStorage();
+  updateUI();
+  initMineGrid();
 
-  attach('upgradeBtn', 'click', upgradePickaxe);
-  attach('redeemBtn', 'click', redeemTokens);
-  attach('redeemVoucherBtn', 'click', redeemVoucher);
-  attach('requestWithdrawBtn', 'click', showWithdrawConfirm);
-  attach('confirmYes', 'click', processWithdrawal);
-  attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
+  // ===================== Mining Grid =====================
+  const mineGrid = document.getElementById('mineGrid');
+  mineGrid.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('cell')) return;
+    if (e.target.dataset.mined === 'true') return;
 
-  const voucherCode = document.getElementById('voucherCode');
-  if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
+    const gain = Math.floor(Math.random() * 5) + 1; // random 1–5 points
+    points += gain;
+    e.target.dataset.mined = 'true';
+    e.target.textContent = '⛏️';
+    e.target.classList.add('mined');
 
-  const withdrawAmount = document.getElementById('withdrawAmount');
-  if (withdrawAmount) withdrawAmount.addEventListener('input', () => {
-    let v = parseInt(withdrawAmount.value);
-    if (isNaN(v) || v < 1) v = 1;
-    if (v > taroTokens) v = taroTokens;
-    withdrawAmount.value = v || 1;
+    updateUI();
+    saveToStorage();
   });
 
+  // ===================== Refresh Grid =====================
   attach('refreshGridBtn', 'click', () => {
     const cost = GAME_CONFIG.REFRESH_GRID_COST;
     if (points >= cost) {
       points -= cost;
-      initMineGrid();
+      initMineGrid();   // FIX: pakai initMineGrid()
       updateUI();
       saveToStorage();
     } else {
@@ -38,7 +35,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // navigation submenu (safe)
+  // ===================== Upgrades =====================
+  attach('upgradeBtn', 'click', () => {
+    const cost = GAME_CONFIG.UPGRADE_COSTS[currentUpgradeLevel];
+    if (!cost) {
+      alert(GAME_CONFIG.ALERT_MESSAGES.MAX_UPGRADE);
+      return;
+    }
+    if (points >= cost) {
+      points -= cost;
+      currentUpgradeLevel++;
+      alert(GAME_CONFIG.ALERT_MESSAGES.UPGRADE_SUCCESS(currentUpgradeLevel));
+      updateUI();
+      saveToStorage();
+    } else {
+      alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS(cost));
+    }
+  });
+
+  // ===================== Navigation =====================
   const navMap = {
     convertBtn: 'convert',
     withdrawBtn: 'withdraw',
@@ -47,27 +62,28 @@ document.addEventListener("DOMContentLoaded", () => {
     statsLink: 'stats',
     aboutLink: 'about'
   };
+
   Object.keys(navMap).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', () => {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       const target = document.getElementById(navMap[id] + 'Page');
       if (target) target.classList.add('active');
-      // render history if needed
-      if (navMap[id] === 'history' && typeof renderHistory === 'function') renderHistory();
+      if (navMap[id] === 'history') renderHistory();
     });
   });
 
-  // bottom nav
-  document.querySelectorAll('.nav-btn').forEach(btn => {
+  // ===================== Back Buttons =====================
+  document.querySelectorAll('.back-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const pid = btn.dataset.page;
-      const target = document.getElementById(pid + 'Page');
-      if (target) target.classList.add('active');
-      document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-      btn.classList.add('active');
-      if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
+      document.getElementById('minePage').classList.add('active');
     });
   });
 });
+
+// ===================== Helpers =====================
+function attach(id, evt, cb) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener(evt, cb);
+}
