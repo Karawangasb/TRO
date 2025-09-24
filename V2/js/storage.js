@@ -4,7 +4,7 @@ function loadFromStorage() {
         const data = JSON.parse(saved);
         points = data.points || 0;
         level = data.level || 1;
-        pointsPerClick = data.pointsPerClick || GAME_CONFIG.POINTS_PER_CLICK_BASE;
+        pointsPerClick = GAME_CONFIG.getPointsPerClick(level); 
         taroTokens = data.taroTokens || 0;
         withdrawnTaro = data.withdrawnTaro || 0;
         totalClicks = data.totalClicks || 0;
