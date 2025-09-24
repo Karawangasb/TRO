@@ -6,7 +6,7 @@ function mineCell(cell) {
     totalClicks++;
     cell.dataset.mined = 'true';
     cell.classList.add('mined');
-    cell.textContent = '🪙';
+    cell.innerHTML = '<img src="img/coin.png" alt="TARO COIN">';
     updateUI();
 }
 
