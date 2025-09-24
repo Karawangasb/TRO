@@ -28,18 +28,30 @@ body {
     min-height: 85vh;
 }
 
+.cell {
+    aspect-ratio: 1;
+    background: #2a2a4a;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    transition: all 0.2s;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+    overflow: hidden; /* penting: agar gambar tidak keluar dari batas */
+}
+
+/* Atur gambar agar pas di dalam sel */
 .cell img {
-    width: 55%;
-    height: auto;
-    max-height: 55%;
-    object-fit: contain;
-    pointer-events: none;
+    width: 60%;       /* Lebar 60% dari kotak */
+    height: auto;     /* Jaga rasio asli */
+    max-height: 60%;  /* Batas tinggi maksimal */
+    object-fit: contain; /* Pastikan gambar tidak terpotong */
+    pointer-events: none; /* Agar klik tetap ke sel, bukan gambarnya */
     transition: transform 0.2s;
 }
 
-.cell:hover img {
-    transform: scale(1.12);
-}
 
 /* Halaman */
 .page {
