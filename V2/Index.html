@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mining TARO COIN (TRO) - TON Chain</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="game-container">
+        <!-- Halaman Mine -->
+        <div id="minePage" class="page active">
+            <h1>TARO COIN MINER</h1>
+            <div class="stats">
+                <div class="stat">
+                    <span class="label">POIN:</span>
+                    <span id="points">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Level:</span>
+                    <span id="level">1</span>
+                </div>
+            </div>
+
+            <div class="mine-area" id="mineArea">
+                <!-- 24 sel akan di-generate oleh JS -->
+            </div>
+
+            <div class="controls">
+                <button id="upgradeBtn">Upgrade Pickaxe (10 POIN)</button>
+            </div>
+
+            <div class="instructions">
+                <p>Klik kotak untuk menambang TARO COIN! Setiap klik menghasilkan POIN.</p>
+            </div>
+        </div>
+
+        <!-- Submenu Tukar -->
+        <div id="redeemMenuPage" class="page">
+            <h2>💱 Menu Tukar</h2>
+            <div class="submenu-buttons">
+                <button id="convertBtn" class="submenu-btn">🔄 Tukar POIN ke TRO</button>
+                <button id="withdrawBtn" class="submenu-btn">📤 Penarikan TRO</button>
+                <button id="historyBtn" class="submenu-btn">📜 Riwayat Penarikan</button>
+                <button id="voucherBtn" class="submenu-btn">🎟️ Voucher Bonus</button>
+            </div>
+        </div>
+
+        <!-- Submenu Info -->
+        <div id="infoMenuPage" class="page">
+            <h2>ℹ️ Informasi</h2>
+            <div class="submenu-buttons">
+                <button id="statsLink" class="submenu-btn">📊 Statistik</button>
+                <button id="aboutLink" class="submenu-btn">📖 Tentang Game</button>
+            </div>
+        </div>
+
+        <!-- Halaman Tukar POIN -->
+        <div id="convertPage" class="page">
+            <h2>🔄 Tukar POIN ke TRO</h2>
+            <div class="redeem-info">
+                <p>Setiap <strong>100 POIN</strong> = <strong>1 TRO</strong></p>
+                <p>POIN Anda: <span id="redeemPoints">0</span></p>
+                <p>TRO dalam Game: <span id="taroTokens">0</span></p>
+            </div>
+            <div class="redeem-controls">
+                <button id="redeemBtn">Tukar 100 POIN → 1 TRO</button>
+                <p id="redeemMessage"></p>
+            </div>
+        </div>
+
+        <!-- Halaman Penarikan -->
+        <div id="withdrawPage" class="page">
+            <h2>📤 Penarikan TRO ke Dompet TON</h2>
+            <div class="withdraw-info">
+                <p>TRO dalam Game: <span id="withdrawTaro">0</span></p>
+                <p>Total TRO yang sudah ditarik: <span id="totalWithdrawn">0</span></p>
+            </div>
+            
+            <div class="ton-address-input">
+                <label for="tonAddress">Alamat Dompet TON Anda:</label>
+                <input type="text" id="tonAddress" placeholder="UQ..." maxlength="48">
+                <p class="ton-hint">Contoh: UQCWjqpAbavs7tOE1JjO9_w_IHEl_OrVeI7P9zKVvLbtwD2l</p>
+            </div>
+            
+            <div class="withdraw-amount">
+                <label for="withdrawAmount">Jumlah TRO yang Akan Ditarik:</label>
+                <input type="number" id="withdrawAmount" min="1" value="1">
+                <p class="amount-hint">Maksimal: <span id="maxWithdraw">0</span> TRO</p>
+            </div>
+            
+            <div class="withdraw-controls">
+                <button id="requestWithdrawBtn">Tarik TRO ke Dompet</button>
+            </div>
+        </div>
+
+        <!-- Halaman Riwayat Penarikan -->
+        <div id="historyPage" class="page">
+            <h2>📜 Riwayat Penarikan</h2>
+            <div class="history-list" id="historyList">
+                <p id="noHistory">Belum ada penarikan.</p>
+            </div>
+        </div>
+
+        <!-- Halaman Voucher -->
+        <div id="voucherPage" class="page">
+            <h2>🎟️ Voucher Bonus</h2>
+            <div class="voucher-info">
+                <p>Masukkan kode voucher untuk klaim bonus POIN atau TRO!</p>
+                <div class="voucher-input">
+                    <input type="text" id="voucherCode" placeholder="Masukkan kode voucher" maxlength="10">
+                    <button id="redeemVoucherBtn">Klaim</button>
+                </div>
+                <p id="voucherMessage"></p>
+                <div class="voucher-examples">
+                    <p><strong>Kode contoh:</strong></p>
+                    <p>• <code>WELCOME10</code> → 10 POIN</p>
+                    <p>• <code>TRO5</code> → 5 TRO</p>
+                    <p>• <code>MINER25</code> → 25 POIN</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Halaman Statistik -->
+        <div id="statsPage" class="page">
+            <h2>📊 Statistik Game</h2>
+            <div class="stats-detail">
+                <p>POIN Saat Ini: <span id="currentPoints">0</span></p>
+                <p>Total POIN yang Pernah Dikumpulkan: <span id="totalPointsEarned">0</span></p>
+                <p>Jumlah Klik Menambang: <span id="totalClicks">0</span></p>
+                <p>Level Pickaxe: <span id="statsLevel">1</span></p>
+                <p>POIN per Klik: <span id="statsPointsPerClick">1</span></p>
+                <p>TRO dalam Game: <span id="statsTaroTokens">0</span></p>
+                <p>Total TRO Ditarik: <span id="statsWithdrawn">0</span></p>
+            </div>
+        </div>
+
+        <!-- Halaman Tentang -->
+        <div id="aboutPage" class="page">
+            <h2>📖 Tentang Game Ini</h2>
+            <div class="about-content">
+                <p><strong>Mining TARO COIN (TRO)</strong> adalah game idle di <strong>TON Chain</strong> di mana Anda menambang TRO dengan mengklik kotak.</p>
+                <p>Setiap klik menghasilkan <strong>POIN</strong> berdasarkan level pickaxe Anda.</p>
+                <p>Gunakan POIN untuk:</p>
+                <ul>
+                    <li><strong>Upgrade Pickaxe</strong> → meningkatkan POIN per klik</li>
+                    <li><strong>Tukar ke TRO</strong> → 100 POIN = 1 TRO</li>
+                </ul>
+                <p>Anda bisa <strong>menarik TRO</strong> ke dompet TON Anda kapan saja!</p>
+                <p><strong>Nama Token:</strong> TARO COIN (TRO)<br>
+                <strong>Jaringan:</strong> TON (The Open Network)</p>
+                <p>Selamat menambang dan kumpulkan TRO sebanyak-banyaknya! 🪙</p>
+            </div>
+        </div>
+
+        <!-- Modal Konfirmasi Penarikan -->
+        <div id="confirmModal" class="modal">
+            <div class="modal-content">
+                <h3>Konfirmasi Penarikan</h3>
+                <p id="confirmAddress" class="confirm-address"></p>
+                <p>Setelah ditarik, TRO tidak bisa dikembalikan ke game.</p>
+                <div class="modal-buttons">
+                    <button id="confirmYes">Ya, Tarik!</button>
+                    <button id="confirmNo">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Navigasi Bawah -->
+        <nav class="bottom-menu">
+            <button class="nav-btn active" data-page="mine">⛏️ Mine</button>
+            <button class="nav-btn" data-page="redeemMenu">💱 Tukar</button>
+            <button class="nav-btn" data-page="infoMenu">ℹ️ Info</button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
