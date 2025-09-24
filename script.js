@@ -1,21 +1,3 @@
-// Cek apakah dijalankan di Telegram WebApp
-if (window.Telegram?.WebApp) {
-  const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-  if (initDataUnsafe?.user) {
-    tgUser.id = initDataUnsafe.user.id;
-    tgUser.username = initDataUnsafe.user.username || '';
-    checkUser();
-  } else {
-    showNonTelegram();
-  }
-} else {
-  showNonTelegram();
-}
-
-function showNonTelegram() {
-  document.getElementById('nonTelegram').style.display = 'block';
-}
-
 <script>
 // 🔗 Ganti dengan URL Apps Script Anda (tanpa spasi!)
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx9ycxcyrGVjexGxin_pH7HyEZF5dGb8r42nsnfoyfOpCEl1m0t_LcRTVBJbBno3ruB/exec';
@@ -281,16 +263,3 @@ async function showWithdrawHistory() {
   document.getElementById('output').style.color = "#333";
 }
 </script>
-
-// Contoh potongan awal:
-async function checkUser() {
-  const res = await fetchData('getUser', { telegram_id: tgUser.id });
-  if (res.error) {
-    document.getElementById('welcomeForm').style.display = 'block';
-  } else {
-    showDashboard();
-    updateDashboard();
-  }
-}
-
-// ... (lanjutkan salin semua fungsi hingga akhir) ...
