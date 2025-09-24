@@ -1,14 +1,21 @@
+// API ke Google Sheets
 const API_URL = "https://script.google.com/macros/s/AKfycbyIJwGDy005Me3FnWHHsQOcpfpbNU_MfK93h2tbnLGStYxWif5YPvVUT0-7tWK4uR4i/exec";
 
-// ⚠️ Jangan deklarasi ulang points, level, dll di sini!
-// Semua variabel sudah ada di core.js
+// State Global
+let telegramUserId = null;
+let points = 0;
+let level = 1;
+let pointsPerClick = GAME_CONFIG.POINTS_PER_CLICK_BASE;
+let taroTokens = 0;
+let withdrawnTaro = 0;
+let totalClicks = 0;
+let totalPointsEarned = 0;
+let withdrawalHistory = [];
+let tonAddress = "";
 
-// Simpan data ke Google Sheets
+// Simpan ke Sheets
 function saveToStorage() {
-    if (!telegramUserId) {
-        console.warn("⚠️ telegramUserId belum terisi, data tidak disimpan.");
-        return;
-    }
+    if (!telegramUserId) return;
 
     const data = {
         action: "saveUser",
@@ -25,14 +32,13 @@ function saveToStorage() {
 
     fetch(API_URL, {
         method: "POST",
-        mode: "no-cors", // 🔸 bypass CORS → tidak bisa baca response
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     }).catch(err => console.error("Error saveToStorage:", err));
 }
 
-// Ambil data user dari Sheets (sementara skip, karena no-cors tidak bisa baca)
+// Ambil dari Sheets (sementara dummy)
 function loadFromStorage() {
-    console.log("⚠️ loadFromStorage dummy (pakai default, butuh proxy / Apps Script tweak)");
-    // Biarkan kosong untuk sekarang → variabel sudah default di core.js
+    console.log("⚠️ loadFromStorage dummy. Perlu proxy agar bisa ambil data balik dari Sheets.");
 }
