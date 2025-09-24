@@ -1,106 +1,73 @@
-// ======================
-// Event Listeners
-// ======================
+// main.js
 document.addEventListener("DOMContentLoaded", () => {
-    // Tombol utama
-    document.getElementById('upgradeBtn').addEventListener('click', upgradePickaxe);
-    document.getElementById('redeemBtn').addEventListener('click', redeemTokens);
-    document.getElementById('requestWithdrawBtn').addEventListener('click', showWithdrawConfirm);
+  // init storage + UI + grid
+  if (typeof loadFromStorage === "function") loadFromStorage();
+  if (typeof initMineGrid === "function") initMineGrid();
+  if (typeof updateUI === "function") updateUI();
 
-    document.getElementById('confirmYes').addEventListener('click', processWithdrawal);
-    document.getElementById('confirmNo').addEventListener('click', () => {
-        document.getElementById('confirmModal').style.display = 'none';
+  // safe attach listeners (only if element exists)
+  const attach = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+
+  attach('upgradeBtn', 'click', upgradePickaxe);
+  attach('redeemBtn', 'click', redeemTokens);
+  attach('redeemVoucherBtn', 'click', redeemVoucher);
+  attach('requestWithdrawBtn', 'click', showWithdrawConfirm);
+  attach('confirmYes', 'click', processWithdrawal);
+  attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
+
+  const voucherCode = document.getElementById('voucherCode');
+  if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
+
+  const withdrawAmount = document.getElementById('withdrawAmount');
+  if (withdrawAmount) withdrawAmount.addEventListener('input', () => {
+    let v = parseInt(withdrawAmount.value);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > taroTokens) v = taroTokens;
+    withdrawAmount.value = v || 1;
+  });
+
+  attach('refreshGridBtn', 'click', () => {
+    const cost = GAME_CONFIG.REFRESH_GRID_COST;
+    if (points >= cost) {
+      points -= cost;
+      resetMineGrid();
+      updateUI();
+      saveToStorage();
+    } else {
+      alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
+    }
+  });
+
+  // navigation submenu (safe)
+  const navMap = {
+    convertBtn: 'convert',
+    withdrawBtn: 'withdraw',
+    historyBtn: 'history',
+    voucherBtn: 'voucher',
+    statsLink: 'stats',
+    aboutLink: 'about'
+  };
+  Object.keys(navMap).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(navMap[id] + 'Page');
+      if (target) target.classList.add('active');
+      // render history if needed
+      if (navMap[id] === 'history' && typeof renderHistory === 'function') renderHistory();
     });
+  });
 
-    document.getElementById('redeemVoucherBtn').addEventListener('click', redeemVoucher);
-    document.getElementById('voucherCode').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') redeemVoucher();
+  // bottom nav
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const pid = btn.dataset.page;
+      const target = document.getElementById(pid + 'Page');
+      if (target) target.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+      btn.classList.add('active');
+      if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
     });
-
-    document.getElementById('withdrawAmount').addEventListener('input', () => {
-        let value = parseInt(document.getElementById('withdrawAmount').value);
-        if (isNaN(value) || value < 1) value = 1;
-        if (value > taroTokens) value = taroTokens;
-        document.getElementById('withdrawAmount').value = value || 1;
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('confirmModal')) {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-    });
-
-    // Tombol refresh grid
-    document.getElementById('refreshGridBtn').addEventListener('click', () => {
-        const cost = GAME_CONFIG.REFRESH_GRID_COST;
-        if (points >= cost) {
-            points -= cost;
-            resetMineGrid();
-            updateUI();
-            saveToStorage();
-        } else {
-            alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
-        }
-    });
-
-    // Inisialisasi game
-    loadFromStorage();
-    initMineGrid();
-    updateUI();
+  });
 });
-
-// ======================
-// Fungsi Withdraw
-// ======================
-function showWithdrawConfirm() {
-    if (taroTokens < 1) {
-        alert(GAME_CONFIG.ALERT_MESSAGES.NO_TRO_TO_WITHDRAW);
-        return;
-    }
-    if (!saveTonAddress()) return;
-    if (!tonAddress) {
-        alert(GAME_CONFIG.ALERT_MESSAGES.NO_ADDRESS);
-        return;
-    }
-
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    if (isNaN(amount) || amount < 1) {
-        alert(GAME_CONFIG.ALERT_MESSAGES.INVALID_WITHDRAW_AMOUNT);
-        return;
-    }
-    if (amount > taroTokens) {
-        alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_TRO(taroTokens));
-        return;
-    }
-
-    document.getElementById('confirmAddress').innerHTML = `
-        Jumlah: <strong>${amount} TRO</strong><br>
-        Alamat: <span class="confirm-address-text">${tonAddress}</span>
-    `;
-    document.getElementById('confirmModal').style.display = 'block';
-}
-
-function processWithdrawal() {
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    if (isNaN(amount) || amount < 1 || amount > taroTokens || !tonAddress) {
-        alert('❌ Data penarikan tidak valid!');
-        document.getElementById('confirmModal').style.display = 'none';
-        return;
-    }
-
-    taroTokens -= amount;
-    withdrawnTaro += amount;
-    const withdrawal = {
-        id: Date.now(),
-        amount: amount,
-        address: tonAddress,
-        date: new Date().toLocaleString('id-ID')
-    };
-    withdrawalHistory.unshift(withdrawal);
-    
-    alert(GAME_CONFIG.ALERT_MESSAGES.WITHDRAW_SUCCESS(amount, tonAddress));
-    document.getElementById('confirmModal').style.display = 'none';
-    updateUI();
-    renderHistory();
-    saveToStorage();
-}
