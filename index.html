@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taro Miner Dashboard</title>
+<title>Taro Miner</title>
 <style>
 body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
 h2 { margin-top: 0; }
 .card { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-button { padding: 8px 12px; margin: 5px; border: none; border-radius: 5px; background-color: #007bff; color: #fff; cursor: pointer; }
-button:hover { background-color: #0056b3; }
-#output { white-space: pre-line; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -25,39 +22,28 @@ button:hover { background-color: #0056b3; }
   <div>Pending Reward: <span id="pendingReward">--</span> TRO</div>
 </div>
 
-<div class="card">
-  <button onclick="showShop()">Shop</button>
-  <button onclick="showInventory()">Inventory</button>
-  <button onclick="claimRewards()">Claim Reward</button>
-  <button onclick="showRewardHistory()">Reward History</button>
-  <button onclick="showWithdrawForm()">Withdraw</button>
-  <button onclick="showWithdrawHistory()">Withdraw History</button>
-</div>
-
-<div id="output"></div>
-
 <script>
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzmmI1ZLHbXjU14fw0JnbGefXPTrXH0McspnWwXR7vBWempWhzYZfx4_CzFuw6Y-IqR/exec';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx9ycxcyrGVjexGxin_pH7HyEZF5dGb8r42nsnfoyfOpCEl1m0t_LcRTVBJbBno3ruB/exec';
 let tgUser = { id: null, username: null };
 
 // Ambil data Telegram WebApp
 if (window.Telegram.WebApp) {
     tgUser.id = window.Telegram.WebApp.initDataUnsafe.user.id;
     tgUser.username = window.Telegram.WebApp.initDataUnsafe.user.username;
-    registerUser(); // otomatis registrasi saat buka
+    registerUser();
 }
 
-// Registrasi user baru
+// Registrasi user otomatis
 async function registerUser() {
     try {
         await fetch(`${WEBAPP_URL}?action=registerUser&telegram_id=${tgUser.id}&username=${tgUser.username}&base_hashrate=1`);
-        updateDashboard(); // langsung tampilkan dashboard setelah registrasi
-    } catch (err) {
+        updateDashboard();
+    } catch(err) {
         console.error(err);
     }
 }
 
-// Fetch data dari Apps Script
+// Fungsi fetch
 async function fetchData(action, params = {}) {
     const url = new URL(WEBAPP_URL);
     url.searchParams.append('action', action);
@@ -69,7 +55,6 @@ async function fetchData(action, params = {}) {
 // Update dashboard
 async function updateDashboard() {
     try {
-        // Ambil data user
         const user = await fetchData('getUser', { telegram_id: tgUser.id });
         const network = await fetchData('getNetworkHashrate');
         const currentBlockData = await fetchData('getCurrentBlock');
@@ -84,72 +69,9 @@ async function updateDashboard() {
     }
 }
 
-// Shop
-async function showShop() {
-    const items = await fetchData('listShop');
-    let output = '=== SHOP ===<br>';
-    items.forEach(i => output += `${i.item_name} (+${i.bonus_hashrate} H/s) - ${i.price} TRO <button onclick="buyItem(${i.item_id},1)">BUY</button><br>`);
-    document.getElementById('output').innerHTML = output;
-}
-
-// Buy item
-async function buyItem(item_id, qty) {
-    const res = await fetchData('buyItem', { telegram_id: tgUser.id, item_id, qty });
-    alert(res.message || 'Item purchased!');
-    updateDashboard();
-    showInventory();
-}
-
-// Inventory
-async function showInventory() {
-    const inv = await fetchData('listInventory', { telegram_id: tgUser.id });
-    let output = '=== INVENTORY ===<br>';
-    inv.forEach(i => output += `${i.item_name} x${i.qty} (+${i.bonus_hashrate} H/s)<br>`);
-    document.getElementById('output').innerHTML = output;
-}
-
-// Claim reward
-async function claimRewards() {
-    const res = await fetchData('claimReward', { telegram_id: tgUser.id });
-    alert(res.message || 'Reward claimed!');
-    updateDashboard();
-}
-
-// Reward history
-async function showRewardHistory() {
-    const history = await fetchData('getRewardHistory', { telegram_id: tgUser.id });
-    let output = '=== REWARD HISTORY ===<br>';
-    history.forEach(h => output += `Block ${h.block_number}: +${h.reward} TRO<br>`);
-    document.getElementById('output').innerHTML = output;
-}
-
-// Withdraw form
-function showWithdrawForm() {
-    const html = `Amount: <input type="number" id="withdrawAmount" value="1000000"><button onclick="requestWithdraw()">Submit</button>`;
-    document.getElementById('output').innerHTML = html;
-}
-
-// Request withdraw
-async function requestWithdraw() {
-    const amount = document.getElementById('withdrawAmount').value;
-    const res = await fetchData('withdraw', { telegram_id: tgUser.id, amount });
-    alert(res.message || 'Withdraw request submitted!');
-    updateDashboard();
-    showWithdrawHistory();
-}
-
-// Withdraw history
-async function showWithdrawHistory() {
-    const history = await fetchData('getWithdrawHistory', { telegram_id: tgUser.id });
-    let output = '=== WITHDRAW HISTORY ===<br>';
-    history.forEach(w => output += `${w.timestamp} - ${w.amount} TRO - ${w.status}<br>`);
-    document.getElementById('output').innerHTML = output;
-}
-
-// Auto refresh dashboard setiap 10 detik
+// Auto-refresh tiap 10 detik
 setInterval(updateDashboard, 10000);
 updateDashboard();
-
 </script>
 
 </body>
