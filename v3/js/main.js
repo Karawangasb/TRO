@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cost = GAME_CONFIG.REFRESH_GRID_COST;
     if (points >= cost) {
       points -= cost;
-      resetMineGrid();
+      initMineGrid();
       updateUI();
       saveToStorage();
     } else {
