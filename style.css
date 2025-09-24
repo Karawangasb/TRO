@@ -1,36 +1,68 @@
 body {
   font-family: Arial, sans-serif;
-  background: #1a1a1a;
-  color: white;
   margin: 0;
   padding: 20px;
-  text-align: center;
+  background: #f0f2f5;
+  color: #333;
 }
-
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  background: #2a2a2a;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+h2 {
+  margin-top: 0;
+  color: #2c3e50;
 }
-
+.card {
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 button {
-  background: #4CAF50;
-  color: white;
+  padding: 8px 12px;
+  margin: 5px;
   border: none;
-  padding: 10px 20px;
-  margin: 10px 5px;
   border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
   cursor: pointer;
+  font-size: 14px;
 }
-
 button:hover {
-  background: #45a049;
+  background-color: #0056b3;
 }
-
-.stats p {
-  font-size: 18px;
-  margin: 10px 0;
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+#output {
+  white-space: pre-line;
+  font-size: 14px;
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-top: 10px;
+  min-height: 40px;
+}
+#welcomeForm {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+#nonTelegram {
+  text-align: center;
+  padding: 30px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+input[type="text"],
+input[type="number"] {
+  padding: 8px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+  font-size: 14px;
 }
