@@ -1,202 +1,73 @@
-// Fungsi untuk menampilkan halaman
-function showPage(pageId) {
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    const target = document.getElementById(pageId + "Page");
-    if (target) target.classList.add("active");
-
-    // Update menu aktif
-    document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.classList.remove("active");
-        if (btn.dataset.page === pageId) btn.classList.add("active");
-    });
-
-    // Sinkronkan tampilan data setiap kali masuk halaman
-    updateUI();
-}
-
-// =======================
-// Event Listener Navigasi
-// =======================
-document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const target = btn.dataset.page;
-        showPage(target);
-    });
-});
-
-// =======================
-// Event di Halaman Mine
-// =======================
-document.getElementById("refreshGridBtn").addEventListener("click", () => {
-    generateMineGrid(); // regenerasi blok baru
-});
-
-document.getElementById("upgradeBtn").addEventListener("click", () => {
-    upgradePickaxe();
-});
-
-// =======================
-// Event di Menu Tukar
-// =======================
-document.getElementById("convertBtn").addEventListener("click", () => {
-    showPage("convert");
-});
-
-document.getElementById("withdrawBtn").addEventListener("click", () => {
-    showPage("withdraw");
-});
-
-document.getElementById("historyBtn").addEventListener("click", () => {
-    showPage("history");
-});
-
-document.getElementById("voucherBtn").addEventListener("click", () => {
-    showPage("voucher");
-});
-
-// =======================
-// Event di Menu Info
-// =======================
-document.getElementById("statsLink").addEventListener("click", () => {
-    showPage("stats");
-});
-
-document.getElementById("aboutLink").addEventListener("click", () => {
-    showPage("about");
-});
-
-// =======================
-// Tukar POIN ke TRO
-// =======================
-document.getElementById("redeemBtn").addEventListener("click", () => {
-    if (gameState.points >= 100) {
-        gameState.points -= 100;
-        gameState.taroTokens += 1;
-        saveGame();
-        updateUI();
-        document.getElementById("redeemMessage").textContent = "✅ Berhasil tukar 100 POIN → 1 TRO!";
-    } else {
-        document.getElementById("redeemMessage").textContent = "❌ POIN tidak cukup!";
-    }
-});
-
-// =======================
-// Voucher
-// =======================
-document.getElementById("redeemVoucherBtn").addEventListener("click", () => {
-    const code = document.getElementById("voucherCode").value.trim().toUpperCase();
-    let message = "❌ Kode tidak valid!";
-    if (code === "WELCOME10") {
-        gameState.points += 10;
-        message = "✅ Klaim 10 POIN!";
-    } else if (code === "TRO5") {
-        gameState.taroTokens += 5;
-        message = "✅ Klaim 5 TRO!";
-    } else if (code === "MINER25") {
-        gameState.points += 25;
-        message = "✅ Klaim 25 POIN!";
-    }
-    saveGame();
-    updateUI();
-    document.getElementById("voucherMessage").textContent = message;
-});
-
-// =======================
-// Withdraw
-// =======================
-document.getElementById("requestWithdrawBtn").addEventListener("click", () => {
-    const amount = parseInt(document.getElementById("withdrawAmount").value);
-    const address = document.getElementById("tonAddress").value.trim();
-
-    if (!address || !address.startsWith("UQ")) {
-        alert("❌ Alamat TON tidak valid!");
-        return;
-    }
-    if (isNaN(amount) || amount < 1 || amount > gameState.taroTokens) {
-        alert("❌ Jumlah tidak valid!");
-        return;
-    }
-
-    // tampilkan modal konfirmasi
-    document.getElementById("confirmModal").style.display = "flex";
-    document.getElementById("confirmAddress").textContent =
-        `Alamat: ${address}\nJumlah: ${amount} TRO`;
-
-    // Simpan data sementara
-    gameState.pendingWithdraw = { address, amount };
-});
-
-document.getElementById("confirmYes").addEventListener("click", () => {
-    const { address, amount } = gameState.pendingWithdraw;
-
-    // Kurangi saldo
-    gameState.taroTokens -= amount;
-    gameState.totalWithdrawn += amount;
-
-    // Tambahkan ke riwayat
-    if (!gameState.withdrawHistory) gameState.withdrawHistory = [];
-    gameState.withdrawHistory.push({
-        address,
-        amount,
-        date: new Date().toLocaleString()
-    });
-
-    saveGame();
-    updateUI();
-
-    document.getElementById("confirmModal").style.display = "none";
-    alert("✅ Penarikan berhasil tercatat! Admin akan memproses.");
-});
-
-document.getElementById("confirmNo").addEventListener("click", () => {
-    document.getElementById("confirmModal").style.display = "none";
-});
-
-// =======================
-// Update UI
-// =======================
-function updateUI() {
-    // Halaman utama
-    document.getElementById("points").textContent = gameState.points;
-    document.getElementById("level").textContent = gameState.level;
-
-    // Halaman convert
-    document.getElementById("redeemPoints").textContent = gameState.points;
-    document.getElementById("taroTokens").textContent = gameState.taroTokens;
-
-    // Halaman withdraw
-    document.getElementById("withdrawTaro").textContent = gameState.taroTokens;
-    document.getElementById("totalWithdrawn").textContent = gameState.totalWithdrawn;
-    document.getElementById("maxWithdraw").textContent = gameState.taroTokens;
-
-    // Halaman stats
-    document.getElementById("currentPoints").textContent = gameState.points;
-    document.getElementById("totalPointsEarned").textContent = gameState.totalPointsEarned;
-    document.getElementById("totalClicks").textContent = gameState.totalClicks;
-    document.getElementById("statsLevel").textContent = gameState.level;
-    document.getElementById("statsPointsPerClick").textContent = gameState.pointsPerClick;
-    document.getElementById("statsTaroTokens").textContent = gameState.taroTokens;
-    document.getElementById("statsWithdrawn").textContent = gameState.totalWithdrawn;
-
-    // Riwayat withdraw
-    const historyList = document.getElementById("historyList");
-    historyList.innerHTML = "";
-    if (gameState.withdrawHistory && gameState.withdrawHistory.length > 0) {
-        gameState.withdrawHistory.forEach(h => {
-            const p = document.createElement("p");
-            p.textContent = `${h.date} - ${h.amount} TRO → ${h.address}`;
-            historyList.appendChild(p);
-        });
-    } else {
-        historyList.innerHTML = "<p id='noHistory'>Belum ada penarikan.</p>";
-    }
-}
-
-// =======================
-// Init Game
-// =======================
+// main.js
 document.addEventListener("DOMContentLoaded", () => {
-    generateMineGrid();
-    updateUI();
-    showPage("mine");
+  // init storage + UI + grid
+  if (typeof loadFromStorage === "function") loadFromStorage();
+  if (typeof initMineGrid === "function") initMineGrid();
+  if (typeof updateUI === "function") updateUI();
+
+  // safe attach listeners (only if element exists)
+  const attach = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+
+  attach('upgradeBtn', 'click', upgradePickaxe);
+  attach('redeemBtn', 'click', redeemTokens);
+  attach('redeemVoucherBtn', 'click', redeemVoucher);
+  attach('requestWithdrawBtn', 'click', showWithdrawConfirm);
+  attach('confirmYes', 'click', processWithdrawal);
+  attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
+
+  const voucherCode = document.getElementById('voucherCode');
+  if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
+
+  const withdrawAmount = document.getElementById('withdrawAmount');
+  if (withdrawAmount) withdrawAmount.addEventListener('input', () => {
+    let v = parseInt(withdrawAmount.value);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > taroTokens) v = taroTokens;
+    withdrawAmount.value = v || 1;
+  });
+
+  attach('refreshGridBtn', 'click', () => {
+    const cost = GAME_CONFIG.REFRESH_GRID_COST;
+    if (points >= cost) {
+      points -= cost;
+      resetMineGrid();
+      updateUI();
+      saveToStorage();
+    } else {
+      alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
+    }
+  });
+
+  // navigation submenu (safe)
+  const navMap = {
+    convertBtn: 'convert',
+    withdrawBtn: 'withdraw',
+    historyBtn: 'history',
+    voucherBtn: 'voucher',
+    statsLink: 'stats',
+    aboutLink: 'about'
+  };
+  Object.keys(navMap).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(navMap[id] + 'Page');
+      if (target) target.classList.add('active');
+      // render history if needed
+      if (navMap[id] === 'history' && typeof renderHistory === 'function') renderHistory();
+    });
+  });
+
+  // bottom nav
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const pid = btn.dataset.page;
+      const target = document.getElementById(pid + 'Page');
+      if (target) target.classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+      btn.classList.add('active');
+      if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
+    });
+  });
 });
