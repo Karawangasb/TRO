@@ -1,258 +1,296 @@
-// =============================
-// ⚙️ Inisialisasi Telegram Web App
-// =============================
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-// =============================
-// 🌐 Konfigurasi Supabase
-// =============================
-const SUPABASE_URL = 'https://gcylipzusxceszpvpcsb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjeWxpcHp1c3hjZXN6cHZwY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NDYwNTcsImV4cCI6MjA3NDEyMjA1N30.mmuHhvu-1CSUPqJwBfss-o54YNNpXOsIFRX2QRjNO_E'; // 🔑 GANTI DENGAN ANON KEY ANDA
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// =============================
-// 🧑‍💻 Ambil Data User Telegram
-// =============================
-const user = tg.initDataUnsafe?.user;
-if (!user) {
-  document.getElementById('user-info').innerText = "⚠️ Buka game ini melalui bot Telegram!";
+// Cek apakah dijalankan di Telegram WebApp
+if (window.Telegram?.WebApp) {
+  const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+  if (initDataUnsafe?.user) {
+    tgUser.id = initDataUnsafe.user.id;
+    tgUser.username = initDataUnsafe.user.username || '';
+    checkUser();
+  } else {
+    showNonTelegram();
+  }
 } else {
-  document.getElementById('user-info').innerText = `Halo, ${user.first_name}! ID: ${user.id}`;
+  showNonTelegram();
 }
 
-// =============================
-// 🗃️ Load atau Buat User di Supabase
-// =============================
-let currentUser = null;
+function showNonTelegram() {
+  document.getElementById('nonTelegram').style.display = 'block';
+}
 
-async function loadOrCreateUser() {
-  if (!user) return null;
+<script>
+// 🔗 Ganti dengan URL Apps Script Anda (tanpa spasi!)
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx9ycxcyrGVjexGxin_pH7HyEZF5dGb8r42nsnfoyfOpCEl1m0t_LcRTVBJbBno3ruB/exec';
 
-  try {
-    // Cek parameter referral: ?start=REFERRER_ID
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerId = urlParams.get('start');
+let tgUser = { id: null, username: null };
+let dashboardInterval = null;
 
-    // Coba ambil user dari database
-    let { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+// Cek apakah dijalankan di Telegram WebApp
+if (window.Telegram?.WebApp) {
+  const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+  if (initDataUnsafe?.user) {
+    tgUser.id = initDataUnsafe.user.id;
+    tgUser.username = initDataUnsafe.user.username || '';
+    checkUser();
+  } else {
+    showNonTelegram();
+  }
+} else {
+  showNonTelegram();
+}
 
-    if (error || !data) {
-      // User belum ada → buat baru
-      const insertData = {
-        id: user.id,
-        hashrate: 1000000, // 1 MH/s dalam satuan numerik
-        mined_tro: 0,
-        pending_tro: 0,
-        last_claim: new Date().toISOString(),
-        created_at: new Date().toISOString()
-      };
+function showNonTelegram() {
+  document.getElementById('nonTelegram').style.display = 'block';
+}
 
-      // Jika ada referrer, simpan
-      if (referrerId && !isNaN(referrerId) && parseInt(referrerId) !== user.id) {
-        insertData.referrer_id = parseInt(referrerId);
-      }
-
-      const { data: newUser, error: createError } = await supabase
-        .from('users')
-        .insert([insertData])
-        .select()
-        .single();
-
-      if (createError) throw createError;
-      currentUser = newUser;
-    } else {
-      currentUser = data;
-    }
-
-    updateUI();
-    return currentUser;
-  } catch (err) {
-    console.error('Gagal load/create user:', err);
-    tg.showPopup({
-      title: "❌ Error",
-      message: "Gagal memuat data. Coba lagi nanti."
-    });
-    return null;
+// Cek apakah user sudah terdaftar
+async function checkUser() {
+  const res = await fetchData('getUser', { telegram_id: tgUser.id });
+  if (res.error) {
+    document.getElementById('welcomeForm').style.display = 'block';
+  } else {
+    showDashboard();
+    updateDashboard();
   }
 }
 
-// =============================
-// 🖥️ Update UI
-// =============================
-function updateUI() {
-  if (!currentUser) return;
-
-  document.getElementById('hashrate').innerText = (currentUser.hashrate / 1000000).toFixed(2);
-  document.getElementById('mined').innerText = currentUser.mined_tro.toFixed(2);
-  document.getElementById('pending').innerText = currentUser.pending_tro.toFixed(2);
-  document.getElementById('ref-link').innerText = `https://t.me/TaroMinerBot?start=${user.id}`;
-}
-
-// =============================
-// ⏱️ AUTO REWARD TIAP 10 MENIT
-// =============================
-let nextBlockTime = new Date(Date.now() + 10 * 60 * 1000); // 10 menit dari sekarang
-
-async function claimReward() {
-  if (!user || !currentUser) return;
-
-  try {
-    const response = await fetch(`${BACKEND_URL}/claim-reward`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegramId: user.id })
-    });
-
-    const result = await response.json();
-
-    if (result.success && result.reward) {
-      // Update database
-      const { error } = await supabase
-        .from('users')
-        .update({
-          pending_tro: currentUser.pending_tro + result.reward,
-          last_claim: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      // Update state lokal & UI
-      currentUser.pending_tro += result.reward;
-      updateUI();
-
-      tg.showPopup({
-        title: "⛏️ Blok Baru Ditambang!",
-        message: `Kamu mendapatkan ${result.reward.toFixed(2)} TRO!`
-      });
-    }
-  } catch (err) {
-    console.error("Error claiming reward:", err);
-    tg.showPopup({
-      title: "❌ Error",
-      message: "Gagal klaim reward. Coba lagi nanti."
-    });
+// Tampilkan dashboard dan mulai auto-refresh
+function showDashboard() {
+  document.getElementById('welcomeForm').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  if (!dashboardInterval) {
+    dashboardInterval = setInterval(updateDashboard, 10000);
   }
 }
 
-function updateCountdown() {
-  const now = new Date();
-  const diff = nextBlockTime - now;
+// Submit referral & daftar user
+async function submitReferral() {
+  const input = document.getElementById('referralCode');
+  let referred_by = (input.value || '').trim();
 
-  if (diff <= 0) {
-    nextBlockTime = new Date(Date.now() + 10 * 60 * 1000);
-    claimReward();
-  }
-
-  const minutes = Math.floor(diff / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-  document.getElementById('next-block').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-setInterval(updateCountdown, 1000);
-
-// =============================
-// 🔼 UPGRADE ALAT MINING
-// =============================
-document.getElementById('upgrade-btn').addEventListener('click', async () => {
-  if (!user || !currentUser) {
-    tg.showPopup({ title: "❌ Error", message: "Buka dari bot Telegram!" });
+  // Validasi format referral (opsional)
+  if (referred_by && !/^[a-zA-Z0-9_]{3,32}$/.test(referred_by)) {
+    showMessage("Kode referral hanya boleh berisi huruf, angka, atau underscore (3-32 karakter).", "error");
     return;
   }
 
-  const upgradeCost = 1000; // TRO
-  if (currentUser.mined_tro >= upgradeCost) {
-    const newHashrate = currentUser.hashrate + 5000000; // +5 MH/s
+  const username = encodeURIComponent(tgUser.username || 'user' + tgUser.id);
+  const referral = encodeURIComponent(referred_by);
 
-    const { error } = await supabase
-      .from('users')
-      .update({
-        mined_tro: currentUser.mined_tro - upgradeCost,
-        hashrate: newHashrate
-      })
-      .eq('id', user.id);
+  showMessage("Mendaftarkan akun...", "info");
 
-    if (error) {
-      tg.showPopup({ title: "❌ Error", message: "Gagal upgrade. Coba lagi." });
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=registerUser&telegram_id=${tgUser.id}&username=${username}&base_hashrate=1&referred_by=${referral}`);
+    const data = await res.json();
+
+    if (data.error) {
+      throw new Error(data.message || "Gagal mendaftar. Coba lagi.");
+    }
+
+    showDashboard();
+    updateDashboard();
+    showMessage("✅ Pendaftaran berhasil!", "success");
+  } catch (err) {
+    console.error(err);
+    showMessage("❌ " + err.message, "error");
+  }
+}
+
+// Fungsi umum fetch data dengan error handling
+async function fetchData(action, params = {}) {
+  try {
+    const url = new URL(WEBAPP_URL);
+    url.searchParams.append('action', action);
+    for (const key in params) {
+      url.searchParams.append(key, encodeURIComponent(params[key]));
+    }
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Fetch error:', err);
+    return { error: true, message: err.message };
+  }
+}
+
+// Format angka dengan pemisah ribuan
+function formatNumber(num) {
+  if (num == null || num === '--') return '--';
+  const n = parseFloat(num);
+  return isNaN(n) ? '--' : n.toLocaleString('id-ID', { maximumFractionDigits: 6 });
+}
+
+// Format hashrate dengan satuan (H/s, KH/s, dll)
+function formatHashrate(h) {
+  if (h == null || h === '--') return '-- H/s';
+  const n = parseFloat(h);
+  if (isNaN(n)) return '-- H/s';
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + ' GH/s';
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + ' MH/s';
+  if (n >= 1e3) return (n / 1e3).toFixed(2) + ' KH/s';
+  return n.toFixed(2) + ' H/s';
+}
+
+// Perbarui tampilan dashboard
+async function updateDashboard() {
+  try {
+    const [user, network, blockData] = await Promise.all([
+      fetchData('getUser', { telegram_id: tgUser.id }),
+      fetchData('getNetworkHashrate'),
+      fetchData('getCurrentBlock')
+    ]);
+
+    if (user.error || network.error || blockData.error) {
+      console.warn("Gagal memperbarui dashboard");
       return;
     }
 
-    currentUser.mined_tro -= upgradeCost;
-    currentUser.hashrate = newHashrate;
-    updateUI();
-    tg.showPopup({ title: "✅ Sukses!", message: "Pickaxe di-upgrade!" });
-  } else {
-    tg.showPopup({ title: "❌ Gagal", message: "TRO tidak cukup!" });
-  }
-});
-
-// =============================
-// 💼 WITHDRAW KE DOMPET
-// =============================
-document.getElementById('withdraw-btn').addEventListener('click', async () => {
-  if (!user || !currentUser) {
-    tg.showPopup({ title: "❌ Error", message: "Buka dari bot Telegram!" });
-    return;
-  }
-
-  if (currentUser.pending_tro <= 0) {
-    tg.showPopup({ title: "❌ Gagal", message: "Tidak ada reward untuk ditarik!" });
-    return;
-  }
-
-  try {
-    const response = await fetch(`${BACKEND_URL}/withdraw`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        telegramId: user.id,
-        amount: currentUser.pending_tro
-      })
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          mined_tro: currentUser.mined_tro + currentUser.pending_tro,
-          pending_tro: 0
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      currentUser.mined_tro += currentUser.pending_tro;
-      currentUser.pending_tro = 0;
-      updateUI();
-
-      tg.showPopup({
-        title: "✅ Withdraw Berhasil",
-        message: `Kamu menerima ${result.amount} TRO!`
-      });
-    } else {
-      tg.showPopup({
-        title: "❌ Gagal",
-        message: result.error || "Gagal proses withdraw."
-      });
-    }
+    document.getElementById('myHashrate').textContent = formatHashrate(user.effective_hashrate);
+    document.getElementById('networkHashrate').textContent = formatHashrate(network.total_hashrate);
+    document.getElementById('currentBlock').textContent = formatNumber((blockData.block_number || 0) + 1);
+    document.getElementById('minedTRO').textContent = formatNumber(user.total_claimed);
+    document.getElementById('pendingReward').textContent = formatNumber(user.unclaimed_balance);
   } catch (err) {
-    console.error("Withdraw error:", err);
-    tg.showPopup({
-      title: "❌ Error",
-      message: "Server tidak merespon. Coba lagi nanti."
+    console.error("Error di updateDashboard:", err);
+  }
+}
+
+// Fungsi bantu tampilkan pesan
+function showMessage(text, type = "info") {
+  const output = document.getElementById('output');
+  output.textContent = text;
+  output.style.color = type === "error" ? "red" : type === "success" ? "green" : "blue";
+}
+
+// === Tombol Interaktif ===
+
+async function showShop() {
+  showMessage("Memuat shop...", "info");
+  const items = await fetchData('listShop');
+  if (items.error) {
+    showMessage("❌ Gagal memuat shop", "error");
+    return;
+  }
+  let output = '=== SHOP ===\n';
+  if (items.length === 0) {
+    output += 'Tidak ada item tersedia.\n';
+  } else {
+    items.forEach(i => {
+      output += `${i.item_name} (+${formatNumber(i.bonus_hashrate)} H/s) - ${formatNumber(i.price)} TRO\n`;
     });
   }
-});
+  document.getElementById('output').textContent = output;
+  document.getElementById('output').style.color = "#333";
+}
 
-// =============================
-// 🚀 START GAME — LOAD USER
-// =============================
-loadOrCreateUser();
+async function showInventory() {
+  showMessage("Memuat inventory...", "info");
+  const inv = await fetchData('listInventory', { telegram_id: tgUser.id });
+  if (inv.error) {
+    showMessage("❌ Gagal memuat inventory", "error");
+    return;
+  }
+  let output = '=== INVENTORY ===\n';
+  if (inv.length === 0) {
+    output += 'Inventory kosong.\n';
+  } else {
+    inv.forEach(i => {
+      output += `${i.item_name} x${i.qty} (+${formatNumber(i.bonus_hashrate)} H/s)\n`;
+    });
+  }
+  document.getElementById('output').textContent = output;
+  document.getElementById('output').style.color = "#333";
+}
+
+async function claimRewards() {
+  showMessage("Mengklaim reward...", "info");
+  const res = await fetchData('claimReward', { telegram_id: tgUser.id });
+  if (res.error) {
+    showMessage("❌ Gagal klaim: " + (res.message || "Coba lagi nanti."), "error");
+    return;
+  }
+  updateDashboard();
+  showMessage("✅ Reward berhasil diklaim!", "success");
+  setTimeout(() => document.getElementById('output').textContent = "", 2000);
+}
+
+async function showRewardHistory() {
+  showMessage("Memuat riwayat reward...", "info");
+  const history = await fetchData('getRewardHistory', { telegram_id: tgUser.id });
+  if (history.error) {
+    showMessage("❌ Gagal memuat riwayat", "error");
+    return;
+  }
+  let output = '=== REWARD HISTORY ===\n';
+  if (history.length === 0) {
+    output += 'Belum ada reward.\n';
+  } else {
+    history.forEach(h => {
+      output += `Blok ${h.block_number}: +${formatNumber(h.reward)} TRO\n`;
+    });
+  }
+  document.getElementById('output').textContent = output;
+  document.getElementById('output').style.color = "#333";
+}
+
+function showWithdrawForm() {
+  const html = `
+    Jumlah TRO: 
+    <input type="number" id="withdrawAmount" value="1000000" min="1000000" step="1000000">
+    <button onclick="requestWithdraw()">Kirim Permintaan</button>
+    <br><small>Minimal withdraw: 1.000.000 TRO</small>
+  `;
+  document.getElementById('output').innerHTML = html;
+}
+
+async function requestWithdraw() {
+  const amountInput = document.getElementById('withdrawAmount');
+  const amount = parseFloat(amountInput.value);
+
+  if (!amount || amount < 1000000) {
+    showMessage("❌ Minimal withdraw 1.000.000 TRO", "error");
+    return;
+  }
+
+  showMessage("Mengirim permintaan withdraw...", "info");
+  const res = await fetchData('withdraw', { telegram_id: tgUser.id, amount: amount });
+  if (res.error) {
+    showMessage("❌ Gagal withdraw: " + (res.message || "Coba lagi."), "error");
+    return;
+  }
+  updateDashboard();
+  showWithdrawHistory();
+  showMessage("✅ Permintaan withdraw dikirim!", "success");
+}
+
+async function showWithdrawHistory() {
+  showMessage("Memuat riwayat withdraw...", "info");
+  const history = await fetchData('getWithdrawHistory', { telegram_id: tgUser.id });
+  if (history.error) {
+    showMessage("❌ Gagal memuat riwayat withdraw", "error");
+    return;
+  }
+  let output = '=== WITHDRAW HISTORY ===\n';
+  if (history.length === 0) {
+    output += 'Belum ada riwayat withdraw.\n';
+  } else {
+    history.forEach(w => {
+      output += `${w.timestamp} - ${formatNumber(w.amount)} TRO - ${w.status}\n`;
+    });
+  }
+  document.getElementById('output').textContent = output;
+  document.getElementById('output').style.color = "#333";
+}
+</script>
+
+// Contoh potongan awal:
+async function checkUser() {
+  const res = await fetchData('getUser', { telegram_id: tgUser.id });
+  if (res.error) {
+    document.getElementById('welcomeForm').style.display = 'block';
+  } else {
+    showDashboard();
+    updateDashboard();
+  }
+}
+
+// ... (lanjutkan salin semua fungsi hingga akhir) ...
