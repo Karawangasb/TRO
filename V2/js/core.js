@@ -15,7 +15,7 @@ function resetMineGrid() {
     cells.forEach(cell => {
         cell.dataset.mined = 'false';
         cell.classList.remove('mined');
-        cell.textContent = '⛏️';
+        cell.innerHTML = '<img src="img/axe.png" alt="Pickaxe">'
     });
 }
 
@@ -27,7 +27,7 @@ function initMineGrid() {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.dataset.mined = 'false';
-        cell.textContent = '⛏️';
+        cell.innerHTML = '<img src="img/axe.png" alt="Pickaxe">';
         cell.addEventListener('click', () => mineCell(cell));
         mineAreaEl.appendChild(cell);
     }
