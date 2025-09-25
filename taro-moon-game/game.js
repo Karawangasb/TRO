@@ -260,5 +260,270 @@ function calculateOfflineProgress() {
         if (offlineMinutes > 1) {
             const offlineEnergy = offlineMinutes * gameState.rechargeRate;
             const maxEnergyGain = gameState.energyMax * 2;
+            const energyGain = Math.min(offlineEnergy, maxEnergyGain);
+            gameState.energy = Math.min(gameState.energyMax, gameState.energy + energyGain);
             
-           
+            if (offlineMinutes > 5) {
+                showNotification(`Welcome back! Refueled ${Math.floor(energyGain)} units while you were away ⛽`, "#4a4aff");
+            }
+        }
+    }
+}
+
+// TRO Staking Function
+function stakeTokens() {
+    const amountInput = document.getElementById('stake-amount');
+    const amount = parseFloat(amountInput.value);
+    
+    if (!amount || amount <= 0) {
+        showNotification("Please enter a valid TRO amount!", "#ff5555");
+        return;
+    }
+    
+    if (amount > gameState.troBalance) {
+        showNotification("Insufficient TRO balance!", "#ff5555");
+        return;
+    }
+    
+    gameState.troBalance -= amount;
+    gameState.stakedAmount += amount;
+    amountInput.value = '';
+    
+    updateUI();
+    checkQuests();
+    saveGame();
+    showNotification(`Launched ${amount} TRO to orbit! 🛰️`, "#4a4aff");
+}
+
+// Quest System
+function checkQuests() {
+    // Update quest progress
+    quests.tap100.progress = gameState.taps;
+    quests.upgrade3.progress = Object.values(gameState.upgrades).reduce((a, b) => a + b) - 4;
+    quests.distance50.progress = gameState.distance;
+    
+    // Check completion and award TRO
+    Object.keys(quests).forEach(questKey => {
+        const quest = quests[questKey];
+        if (!quest.completed && quest.progress >= quest.target) {
+            quest.completed = true;
+            gameState.troBalance += quest.reward;
+            showNotification(`Mission completed! +${quest.reward} TRO 🎯`, "#00ffff");
+            updateQuestUI();
+        }
+    });
+}
+
+function updateQuestUI() {
+    // Update quest progress bars
+    const questBars = {
+        tap100: document.getElementById('quest-tap-bar'),
+        upgrade3: document.getElementById('quest-upgrade-bar'),
+        distance50: document.getElementById('quest-distance-bar')
+    };
+    
+    Object.keys(questBars).forEach(questKey => {
+        const quest = quests[questKey];
+        const progressPercent = Math.min(100, (quest.progress / quest.target) * 100);
+        if (questBars[questKey]) {
+            questBars[questKey].style.width = `${progressPercent}%`;
+        }
+    });
+}
+
+// UI Updates for Moon Mission
+function updateUI() {
+    // Update energy and TRO balance
+    energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
+    balanceValue.textContent = gameState.troBalance.toFixed(2);
+    
+    // Update distance and progress
+    const distanceToMoon = Math.max(0, gameState.totalDistance - gameState.distance);
+    distanceValue.textContent = `${Math.floor(distanceToMoon).toLocaleString()}km`;
+    
+    // Update progress bar and rocket position
+    const progressPercent = (gameState.distance / gameState.totalDistance) * 100;
+    distanceBar.style.width = `${progressPercent}%`;
+    rocketPosition.style.left = `${progressPercent}%`;
+    
+    // Update energy bar
+    const energyPercent = (gameState.energy / gameState.energyMax) * 100;
+    document.getElementById('energy-bar').style.width = `${energyPercent}%`;
+    
+    // Update upgrade costs and levels
+    document.getElementById('capacity-cost').textContent = 
+        Math.floor(50 * Math.pow(1.5, gameState.upgrades.capacity - 1));
+    document.getElementById('power-cost').textContent = 
+        Math.floor(100 * Math.pow(1.8, gameState.upgrades.power - 1));
+    document.getElementById('speed-cost').textContent = 
+        Math.floor(150 * Math.pow(2.0, gameState.upgrades.speed - 1));
+    document.getElementById('luck-cost').textContent = 
+        Math.floor(200 * Math.pow(2.2, gameState.upgrades.luck - 1));
+    
+    document.getElementById('capacity-level').textContent = gameState.upgrades.capacity;
+    document.getElementById('power-level').textContent = gameState.upgrades.power;
+    document.getElementById('speed-level').textContent = gameState.upgrades.speed;
+    document.getElementById('luck-level').textContent = gameState.upgrades.luck;
+    
+    // Update staked amount
+    document.getElementById('staked-amount').textContent = gameState.stakedAmount.toFixed(2);
+    
+    // Check if reached the moon!
+    if (gameState.distance >= gameState.totalDistance && !gameState.moonReached) {
+        gameState.moonReached = true;
+        showNotification("🎉 CONGRATULATIONS! YOU REACHED THE MOON! 🎉", "#ffd700");
+        // Special moon reward
+        gameState.troBalance += 1000;
+        setTimeout(() => {
+            showNotification("+1000 TRO Moon Landing Bonus! 🌕", "#ffd700");
+        }, 2000);
+    }
+}
+
+function renderGame() {
+    updateUI();
+}
+
+// Save/Load Game for Moon Mission
+function saveGame() {
+    localStorage.setItem('troMoonMission', JSON.stringify(gameState));
+    localStorage.setItem('troMoonMissionLastSave', Date.now().toString());
+}
+
+function resetGame() {
+    if (confirm("Reset all moon mission progress? All data will be lost!")) {
+        localStorage.removeItem('troMoonMission');
+        localStorage.removeItem('troMoonMissionLastSave');
+        location.reload();
+    }
+}
+
+// Visual Effects for Moon Mission
+function animateRocket() {
+    rocket.classList.add('launching');
+    setTimeout(() => {
+        rocket.classList.remove('launching');
+    }, 300);
+}
+
+function createFloatingText(text, isBoost) {
+    const floatingText = document.createElement('div');
+    floatingText.textContent = (isBoost ? "⚡ " : "") + text;
+    floatingText.className = 'floating-text';
+    floatingText.style.color = isBoost ? '#00ffff' : '#4a4aff';
+    floatingText.style.left = `calc(50% + ${Math.random() * 60 - 30}px)`;
+    floatingText.style.textShadow = '0 0 10px currentColor';
+    
+    tapArea.appendChild(floatingText);
+    setTimeout(() => floatingText.remove(), 1000);
+}
+
+function showNotification(message, color) {
+    notification.textContent = message;
+    notification.style.display = 'block';
+    notification.style.background = color ? 
+        `linear-gradient(45deg, ${color}, ${color}dd)` : 
+        'rgba(0, 0, 0, 0.8)';
+    notification.style.border = `1px solid ${color}`;
+    
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+// Sound Effects
+function playLaunchSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Rocket launch sound
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
+        
+        oscillator.type = 'sawtooth';
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (e) {
+        // Audio not supported
+    }
+}
+
+// Tab System
+function setupTabs() {
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            tab.classList.add('active');
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+}
+
+// Price prediction chart animation
+function animatePriceChart() {
+    const chartBars = document.querySelectorAll('.chart-bar');
+    chartBars.forEach((bar, index) => {
+        setTimeout(() => {
+            bar.style.height = bar.style.height; // Trigger reflow
+        }, index * 200);
+    });
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 TRO Moon Mission loading...");
+    
+    tapArea.addEventListener('click', handleTap);
+
+    document.querySelectorAll('.upgrade-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const upgradeType = card.getAttribute('data-upgrade');
+            buyUpgrade(upgradeType);
+        });
+    });
+
+    document.getElementById('stake-btn').addEventListener('click', stakeTokens);
+    connectBtn.addEventListener('click', simulateWalletConnection);
+
+    // Initialize the game
+    initGame();
+    
+    // Animate price chart
+    setTimeout(animatePriceChart, 1000);
+});
+
+// Fallback initialization
+window.addEventListener('load', () => {
+    if (typeof gameState === 'undefined') {
+        console.log("🔄 Re-initializing Moon Mission...");
+        initGame();
+    }
+});
+
+// Add some space-themed console messages
+console.log(`%c
+🚀 TRO MOON MISSION 🚀
+─────────────────────
+Total Distance: 384,400 km
+Target Price: $0.10
+Mission: Take TRO to the Moon!
+
+Good luck, astronaut! 🌕
+`, "background: #0a0a2a; color: #00ffff; font-size: 14px; padding: 10px; border: 1px solid #4a4aff;");
