@@ -2,12 +2,18 @@
 // grid & logika inti
 
 function resetMineGrid() {
-  const cells = document.querySelectorAll('.cell');
-  cells.forEach(cell => {
+  const mineAreaEl = document.getElementById('mineArea');
+  if (!mineAreaEl) return;
+
+  mineAreaEl.innerHTML = '';
+  for (let i = 0; i < 24; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
     cell.dataset.mined = 'false';
-    cell.classList.remove('mined');
     cell.innerHTML = '<img src="img/axe.png" alt="Pickaxe">';
-  });
+    cell.addEventListener('click', () => mineCell(cell));
+    mineAreaEl.appendChild(cell);
+  }
 }
 
 function initMineGrid() {
