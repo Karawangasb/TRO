@@ -164,14 +164,71 @@ function updateUI() {
   const requestWithdrawBtn = document.getElementById('requestWithdrawBtn');
   if (requestWithdrawBtn) requestWithdrawBtn.disabled = taroTokens < 1;
 
-  // update withdraw amount max
-  const maxWithdrawEl = document.getElementById('maxWithdraw');
-  const withdrawAmountInput = document.getElementById('withdrawAmount');
-  if (maxWithdrawEl) maxWithdrawEl.textContent = taroTokens;
-  if (withdrawAmountInput) {
-    withdrawAmountInput.max = taroTokens;
-    let cur = parseInt(withdrawAmountInput.value) || 1;
-    if (cur > taroTokens) cur = taroTokens || 1;
-    withdrawAmountInput.value = cur;
+// Tampilkan modal konfirmasi penarikan (minimal 1000 TRO)
+function showWithdrawConfirm() {
+  const address = document.getElementById('tonAddress')?.value?.trim();
+  const amount = parseInt(document.getElementById('withdrawAmount')?.value) || 0;
+
+  if (!address) {
+    showMessage('withdrawMessage', GAME_CONFIG.ALERT_MESSAGES.NO_ADDRESS, 2500);
+    return;
   }
+  if (!GAME_CONFIG.TON_ADDRESS_REGEX.test(address)) {
+    showMessage('withdrawMessage', GAME_CONFIG.ALERT_MESSAGES.INVALID_TON, 2500);
+    return;
+  }
+  if (amount < 1000) {
+    showMessage('withdrawMessage', '❌ Minimal penarikan: 1000 TRO!', 2500);
+    return;
+  }
+  if (amount > taroTokens) {
+    showMessage('withdrawMessage', GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_TRO(taroTokens), 2500);
+    return;
+  }
+
+  document.getElementById('confirmAddress').textContent = address;
+  document.getElementById('confirmModal').style.display = 'block';
+}
+
+// Proses penarikan: kurangi TRO & simpan riwayat
+function processWithdrawal() {
+  const address = document.getElementById('tonAddress')?.value?.trim();
+  const amount = parseInt(document.getElementById('withdrawAmount')?.value) || 0;
+
+  // Validasi ulang
+  if (!address || !GAME_CONFIG.TON_ADDRESS_REGEX.test(address) || amount < 1000 || amount > taroTokens) {
+    document.getElementById('confirmModal').style.display = 'none';
+    return;
+  }
+
+  // ✅ Kurangi TRO dari saldo game
+  taroTokens -= amount;
+  withdrawnTaro += amount;
+
+  // Simpan ke riwayat
+  withdrawalHistory.push({
+    amount: amount,
+    address: address,
+    date: new Date().toLocaleString('id-ID')
+  });
+
+  // Kirim ke server (Google Apps Script)
+  const payload = {
+    action: "requestWithdrawal",
+    userId: telegramUserId,
+    amount: amount,
+    wallet: address
+  };
+
+  fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(err => console.warn("Withdrawal request failed:", err));
+
+  saveToStorage();
+  updateUI();
+  document.getElementById('confirmModal').style.display = 'none';
+  showMessage('withdrawMessage', `✅ Permintaan penarikan ${amount} TRO dikirim!\nSaldo TRO Anda berkurang.`, 4000);
 }
