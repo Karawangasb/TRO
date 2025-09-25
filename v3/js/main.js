@@ -1,74 +1,76 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
-  // init storage + UI + grid
   if (typeof loadFromStorage === "function") loadFromStorage();
   if (typeof initMineGrid === "function") initMineGrid();
   if (typeof updateUI === "function") updateUI();
 
-  // safe attach listeners (only if element exists)
-  const attach = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+  // Event delegation untuk SEMUA klik
+  document.addEventListener('click', (e) => {
+    const el = e.target;
 
-  attach('upgradeBtn', 'click', upgradePickaxe);
-  attach('redeemBtn', 'click', redeemTokens);
-  attach('redeemVoucherBtn', 'click', redeemVoucher);
-  attach('requestWithdrawBtn', 'click', showWithdrawConfirm);
-  attach('confirmYes', 'click', processWithdrawal);
-  attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
+    // --- Tombol Aksi ---
+    if (el.id === 'upgradeBtn') upgradePickaxe();
+    else if (el.id === 'redeemBtn') redeemTokens();
+    else if (el.id === 'redeemVoucherBtn') redeemVoucher();
+    else if (el.id === 'requestWithdrawBtn') showWithdrawConfirm();
+    else if (el.id === 'confirmYes') processWithdrawal();
+    else if (el.id === 'confirmNo') {
+      const modal = document.getElementById('confirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+    else if (el.id === 'refreshGridBtn') {
+      resetMineGrid();
+      updateUI();
+      saveToStorage();
+    }
 
+    // --- Submenu (Tukar > ...) ---
+    else if (el.id === 'convertBtn') showPage('convert');
+    else if (el.id === 'withdrawBtn') showPage('withdraw');
+    else if (el.id === 'historyBtn') {
+      showPage('history');
+      if (typeof renderHistory === 'function') renderHistory();
+    }
+    else if (el.id === 'voucherBtn') showPage('voucher');
+    else if (el.id === 'statsLink') showPage('stats');
+    else if (el.id === 'aboutLink') showPage('about');
+
+    // --- Navigasi Bawah ---
+    else if (el.classList.contains('nav-btn')) {
+      const pid = el.dataset.page;
+      showPage(pid);
+      if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
+    }
+  });
+
+  // Helper: tampilkan halaman
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(pageId + 'Page');
+    if (target) target.classList.add('active');
+    
+    // Update active nav button
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if (btn.dataset.page === pageId) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+  }
+
+  // --- Input Events ---
   const voucherCode = document.getElementById('voucherCode');
-  if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
+  if (voucherCode) {
+    voucherCode.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') redeemVoucher();
+    });
+  }
 
   const withdrawAmount = document.getElementById('withdrawAmount');
-  if (withdrawAmount) withdrawAmount.addEventListener('input', () => {
-    let v = parseInt(withdrawAmount.value);
-    if (isNaN(v) || v < 1) v = 1;
-    if (v > taroTokens) v = taroTokens;
-    withdrawAmount.value = v || 1;
-  });
-
-  // navigation submenu (safe)
-  const navMap = {
-    convertBtn: 'convert',
-    withdrawBtn: 'withdraw',
-    historyBtn: 'history',
-    voucherBtn: 'voucher',
-    statsLink: 'stats',
-    aboutLink: 'about'
-  };
-  Object.keys(navMap).forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('click', () => {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const target = document.getElementById(navMap[id] + 'Page');
-      if (target) target.classList.add('active');
-      if (navMap[id] === 'history' && typeof renderHistory === 'function') renderHistory();
+  if (withdrawAmount) {
+    withdrawAmount.addEventListener('input', () => {
+      let v = parseInt(withdrawAmount.value);
+      if (isNaN(v) || v < 1) v = 1;
+      if (v > taroTokens) v = taroTokens;
+      withdrawAmount.value = v || 1;
     });
-  });
-
-  // Bottom nav dengan event delegation
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('nav-btn')) {
-    const pid = e.target.dataset.page;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-    
-    const target = document.getElementById(pid + 'Page');
-    if (target) target.classList.add('active');
-    e.target.classList.add('active');
-
-    if (pid === 'history' && typeof renderHistory === 'function') {
-      renderHistory();
-    }
   }
-});
-// Di akhir file main.js
-document.getElementById('refreshGridBtn').addEventListener('click', () => {
-    const cost = GAME_CONFIG.REFRESH_GRID_COST;
-    if (points >= cost) {
-        points -= cost;
-        resetMineGrid();
-        updateUI();
-    } else {
-        alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
-    }
 });
