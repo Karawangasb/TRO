@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRO Moon Mission</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="TRO.png" alt="TRO Logo" class="logo-image">
+                <div>
+                    <h1>TRO Moon Mission</h1>
+                    <div class="wallet-address" id="wallet-address">Not connected</div>
+                </div>
+            </div>
+            <div class="wallet-info">
+                <button class="connect-btn" id="connect-btn">Connect Wallet</button>
+                <button class="reset-btn" onclick="resetGame()">Reset</button>
+            </div>
+        </div>
+
+        <div class="game-section" id="game-section">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-rocket"></i>
+                    <div class="stat-value" id="energy-value">100/100</div>
+                    <div class="stat-label">FUEL</div>
+                </div>
+                <div class="stat-card">
+                    <img src="TRO.png" alt="TRO" class="token-icon">
+                    <div class="stat-value" id="balance-value">0.00</div>
+                    <div class="stat-label">TRO BALANCE</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-value" id="price-value">$0.001</div>
+                    <div class="stat-label">TRO PRICE</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-road"></i>
+                    <div class="stat-value" id="distance-value">0km</div>
+                    <div class="stat-label">TO MOON</div>
+                </div>
+            </div>
+
+            <div class="tap-area" id="tap-area">
+                <div class="rocket" id="rocket">🚀</div>
+                <div class="moon" id="moon">🌕</div>
+                <div class="tap-text">CLICK ROCKET TO LAUNCH!</div>
+                <div class="distance-bar-container">
+                    <div class="earth">🌍</div>
+                    <div class="distance-bar">
+                        <div class="distance-progress" id="distance-bar"></div>
+                        <div class="rocket-position" id="rocket-position">🚀</div>
+                    </div>
+                    <div class="moon-end">🌕</div>
+                </div>
+            </div>
+
+            <div class="tab-container">
+                <div class="tab active" data-tab="upgrades">Upgrades</div>
+                <div class="tab" data-tab="staking">Staking</div>
+                <div class="tab" data-tab="quests">Missions</div>
+                <div class="tab" data-tab="market">Market</div>
+            </div>
+
+            <div class="tab-content active" id="upgrades-tab">
+                <div class="upgrades-section">
+                    <div class="upgrades-grid">
+                        <div class="upgrade-card" data-upgrade="capacity">
+                            <i class="fas fa-gas-pump"></i>
+                            <div class="upgrade-name">Fuel Capacity</div>
+                            <div class="upgrade-cost"><img src="TRO.png" alt="TRO" class="token-icon-small"> <span id="capacity-cost">50</span> TRO</div>
+                            <div class="upgrade-level">Level <span id="capacity-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="power">
+                            <i class="fas fa-fire"></i>
+                            <div class="upgrade-name">Thrust Power</div>
+                            <div class="upgrade-cost"><img src="TRO.png" alt="TRO" class="token-icon-small"> <span id="power-cost">100</span> TRO</div>
+                            <div class="upgrade-level">Level <span id="power-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="speed">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <div class="upgrade-name">Fuel Refill</div>
+                            <div class="upgrade-cost"><img src="TRO.png" alt="TRO" class="token-icon-small"> <span id="speed-cost">150</span> TRO</div>
+                            <div class="upgrade-level">Level <span id="speed-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="luck">
+                            <i class="fas fa-bolt"></i>
+                            <div class="upgrade-name">Boost Chance</div>
+                            <div class="upgrade-cost"><img src="TRO.png" alt="TRO" class="token-icon-small"> <span id="luck-cost">200</span> TRO</div>
+                            <div class="upgrade-level">Level <span id="luck-level">1</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="staking-tab">
+                <div class="staking-section">
+                    <div class="section-title">
+                        <i class="fas fa-satellite"></i>
+                        <h2>Orbital Staking</h2>
+                    </div>
+                    <p>Stake TRO in orbit to earn passive rewards!</p>
+                    
+                    <div class="staking-input">
+                        <input type="number" id="stake-amount" placeholder="TRO to stake" min="1">
+                        <button id="stake-btn">Launch to Orbit</button>
+                    </div>
+                    
+                    <div class="staking-info">
+                        <div>APY: <span style="color: #00ff88;">15%</span></div>
+                        <div>Staked: <img src="TRO.png" alt="TRO" class="token-icon-small"> <span id="staked-amount">0</span> TRO</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="quests-tab">
+                <div class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    <h2>Space Missions</h2>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Launch 100 times</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-tap-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: <img src="TRO.png" alt="TRO" class="token-icon-small"> 10 TRO</div>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Upgrade 3 systems</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-upgrade-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: <img src="TRO.png" alt="TRO" class="token-icon-small"> 25 TRO</div>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Reach 50km altitude</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-distance-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: <img src="TRO.png" alt="TRO" class="token-icon-small"> 15 TRO</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="market-tab">
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>Market Data</h2>
+                </div>
+                
+                <div class="market-item">
+                    <div>Market Cap</div>
+                    <div id="market-cap">$0</div>
+                </div>
+                
+                <div class="market-item">
+                    <div>24h Volume</div>
+                    <div id="volume">$0</div>
+                </div>
+                
+                <div class="market-item">
+                    <div>Price Change</div>
+                    <div id="price-change" style="color: #00ff88;">+0%</div>
+                </div>
+                
+                <div class="market-item">
+                    <div>Next Price Target</div>
+                    <div id="price-target">$0.002</div>
+                </div>
+                
+                <div class="price-history">
+                    <h3>Price Prediction</h3>
+                    <div class="prediction-chart">
+                        <div class="chart-bar" style="height: 20%;" data-price="$0.001">Now</div>
+                        <div class="chart-bar" style="height: 40%;" data-price="$0.005">+1M TRO</div>
+                        <div class="chart-bar" style="height: 60%;" data-price="$0.01">+5M TRO</div>
+                        <div class="chart-bar" style="height: 80%;" data-price="$0.05">+10M TRO</div>
+                        <div class="chart-bar" style="height: 100%;" data-price="$0.10">MOON! 🚀</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>
