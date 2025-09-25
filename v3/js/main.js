@@ -15,21 +15,22 @@ document.addEventListener("DOMContentLoaded", () => {
   attach('confirmYes', 'click', processWithdrawal);
   attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
 
+  // ✅ Event delegation untuk refreshGridBtn (dalam DOMContentLoaded)
   document.addEventListener('click', (e) => {
-  if (e.target.id === 'refreshGridBtn') {
-    const cost = GAME_CONFIG.REFRESH_GRID_COST;
-    if (points >= cost) {
-      points -= cost;
-      resetMineGrid();
-      updateUI();
-      saveToStorage();
-      showMessage('mineMessage', '✅ Block baru!', 1500);
-    } else {
-      showMessage('mineMessage', GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost), 2000);
+    if (e.target.id === 'refreshGridBtn') {
+      const cost = GAME_CONFIG.REFRESH_GRID_COST;
+      if (points >= cost) {
+        points -= cost;
+        resetMineGrid();
+        updateUI();
+        saveToStorage();
+        showMessage('mineMessage', '✅ Block baru!', 1500);
+      } else {
+        showMessage('mineMessage', GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost), 2000);
+      }
     }
-  }
-});
-  
+  });
+
   const voucherCode = document.getElementById('voucherCode');
   if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
 
@@ -56,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       const target = document.getElementById(navMap[id] + 'Page');
       if (target) target.classList.add('active');
-      // render history if needed
       if (navMap[id] === 'history' && typeof renderHistory === 'function') renderHistory();
     });
   });
@@ -73,4 +73,4 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
     });
   });
-});
+}); // 👈 INI HARUS DI AKHIR — SETELAH SEMUA KODE
