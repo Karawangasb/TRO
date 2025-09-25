@@ -16,21 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
   attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
 
   // ✅ Event delegation untuk refreshGridBtn (dalam DOMContentLoaded)
-  document.addEventListener('click', (e) => {
-    if (e.target.id === 'refreshGridBtn') {
-      const cost = GAME_CONFIG.REFRESH_GRID_COST;
-      if (points >= cost) {
-        points -= cost;
-        resetMineGrid();
-        updateUI();
-        saveToStorage();
-        showMessage('mineMessage', '✅ Block baru!', 1500);
-      } else {
-        showMessage('mineMessage', GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost), 2000);
-      }
-    }
-  });
-
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'refreshGridBtn') {
+    resetMineGrid();
+    updateUI();
+    saveToStorage();
+  }
+});
   const voucherCode = document.getElementById('voucherCode');
   if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
 
