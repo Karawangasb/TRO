@@ -164,6 +164,18 @@ function updateUI() {
   const requestWithdrawBtn = document.getElementById('requestWithdrawBtn');
   if (requestWithdrawBtn) requestWithdrawBtn.disabled = taroTokens < 1;
 
+  // update withdraw amount max
+  const maxWithdrawEl = document.getElementById('maxWithdraw');
+  const withdrawAmountInput = document.getElementById('withdrawAmount');
+  if (maxWithdrawEl) maxWithdrawEl.textContent = taroTokens;
+  if (withdrawAmountInput) {
+    withdrawAmountInput.max = taroTokens;
+    let cur = parseInt(withdrawAmountInput.value) || 1;
+    if (cur > taroTokens) cur = taroTokens || 1;
+    withdrawAmountInput.value = cur;
+  }
+}
+
 // Tampilkan modal konfirmasi penarikan (minimal 1000 TRO)
 function showWithdrawConfirm() {
   const address = document.getElementById('tonAddress')?.value?.trim();
