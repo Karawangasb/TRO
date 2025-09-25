@@ -1,23 +1,37 @@
+/* ------------------------- */
+/* --- GAYA DASAR & FONT --- */
+/* ------------------------- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Mencegah seleksi teks yang tidak diinginkan saat tapping cepat */
+    user-select: none; 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    /* Menghilangkan highlight biru saat disentuh di mobile */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     background: linear-gradient(135deg, #2d5a27, #3a7a32, #4a9a3c);
     color: white;
     min-height: 100vh;
-    padding: 10px;
+    /* Memberi ruang di bawah agar konten tidak tertutup menu navigasi */
+    padding-bottom: 90px;
 }
 
 .container {
-    max-width: 400px;
+    max-width: 480px; /* Sedikit lebih lebar untuk perangkat modern */
     margin: 0 auto;
     padding: 15px;
 }
 
+/* ------------------- */
+/* --- BAGIAN HEADER --- */
+/* ------------------- */
 .header {
     display: flex;
     justify-content: space-between;
@@ -25,334 +39,172 @@ body {
     margin-bottom: 20px;
     padding: 15px;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
+    border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .logo i {
-    font-size: 24px;
+    font-size: 28px;
     color: #8bc34a;
 }
 
 .logo h1 {
     font-size: 18px;
-}
-
-.wallet-info {
-    text-align: right;
+    font-weight: 600;
 }
 
 .wallet-address {
     font-size: 12px;
     opacity: 0.8;
-    margin-bottom: 5px;
 }
 
 .connect-btn {
-    background: linear-gradient(45deg, #8bc34a, #689f38);
-    border: none;
+    background: #8bc34a;
     color: white;
+    border: none;
     padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 12px;
-}
-
-.connect-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
-}
-
-.reset-btn {
-    background: #d32f2f;
-    border: none;
-    color: white;
-    padding: 5px 10px;
     border-radius: 10px;
-    font-size: 10px;
-    margin-left: 5px;
     cursor: pointer;
-}
-
-.stats-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.stat-card i {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #8bc34a;
-}
-
-.stat-value {
-    font-size: 20px;
     font-weight: bold;
-    margin: 5px 0;
+    transition: background 0.3s, transform 0.2s;
 }
 
-.stat-label {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-.tap-area {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
-    border: 2px solid #8bc34a;
-}
-
-.tap-area:active {
+.connect-btn:active {
     transform: scale(0.95);
 }
 
-.taro-plant {
-    font-size: 80px;
-    margin-bottom: 15px;
-    display: inline-block;
-    transition: transform 0.2s;
-    filter: drop-shadow(0 0 10px rgba(139, 195, 74, 0.5));
-}
+/* ------------------------ */
+/* --- KONTEN UTAMA & TAB --- */
+/* ------------------------ */
 
-.tap-text {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #c5e1a5;
-}
-
-.energy-bar-container {
-    width: 100%;
-    height: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    margin-top: 15px;
-    overflow: hidden;
-}
-
-.energy-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #8bc34a, #689f38);
-    border-radius: 5px;
-    width: 100%;
-    transition: width 0.5s;
-}
-
-.upgrades-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 18px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.section-title i {
-    color: #8bc34a;
-}
-
-.upgrades-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.upgrade-card {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 15px;
-    text-align: center;
-    transition: all 0.3s;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    border: 1px solid #558b2f;
-}
-
-.upgrade-card:hover {
-    transform: translateY(-5px);
-    background: rgba(0, 0, 0, 0.4);
-    border-color: #8bc34a;
-}
-
-.upgrade-card i {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #ffd54f;
-}
-
-.upgrade-name {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.upgrade-cost {
-    font-size: 12px;
-    color: #ffd54f;
-    margin-bottom: 10px;
-}
-
-.upgrade-level {
-    font-size: 11px;
-    opacity: 0.7;
-}
-
-.staking-section {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid #558b2f;
-}
-
-.staking-input {
-    display: flex;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.staking-input input {
-    flex: 1;
-    padding: 10px 15px;
-    border-radius: 10px;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-.staking-input input::placeholder {
-    color: #ccc;
-}
-
-.staking-input button {
-    background: linear-gradient(45deg, #ffd54f, #ffb300);
-    border: none;
-    color: black;
-    padding: 10px 15px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.staking-info {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    font-size: 14px;
-}
-
-.floating-text {
-    position: absolute;
-    font-weight: bold;
-    pointer-events: none;
-    animation: floatUp 1s forwards;
-    z-index: 10;
-    font-size: 18px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-}
-
-@keyframes floatUp {
-    0% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-50px);
-    }
-}
-
-.notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px 20px;
-    border-radius: 10px;
-    z-index: 100;
-    animation: fadeInOut 3s forwards;
-    display: none;
-    border: 1px solid #8bc34a;
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; top: 10px; }
-    10% { opacity: 1; top: 20px; }
-    90% { opacity: 1; top: 20px; }
-    100% { opacity: 0; top: 10px; }
-}
-
-.tab-container {
-    display: flex;
-    margin-bottom: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    padding: 5px;
-}
-
-.tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 12px;
-}
-
-.tab.active {
-    background: rgba(139, 195, 74, 0.5);
-}
-
+/* Semua konten tab disembunyikan secara default */
 .tab-content {
     display: none;
+    animation: fadeIn 0.5s;
 }
 
+/* Hanya tab dengan class .active yang ditampilkan */
 .tab-content.active {
     display: block;
 }
 
-.quest-item {
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #c8e6c9;
+}
+
+/* ---------------------------- */
+/* --- HALAMAN UTAMA (HOME/TAP) --- */
+/* ---------------------------- */
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    flex: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-card i {
+    font-size: 20px;
+    color: #8bc34a;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.tap-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 250px;
+    cursor: pointer;
+    position: relative;
+}
+
+.plant-evolution {
+    font-size: 80px;
+    transition: transform 0.1s ease;
+}
+
+.tap-area:active .plant-evolution {
+    transform: scale(0.9);
+}
+
+.energy-bar-container {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 3px;
+    margin-top: 20px;
+}
+
+.energy-bar {
+    height: 10px;
+    background: linear-gradient(90deg, #ffd54f, #ffb300);
+    border-radius: 7px;
+    width: 100%;
+    transition: width 0.5s;
+}
+
+/* ------------------------------------- */
+/* --- KARTU UPGRADE, STAKING, QUEST --- */
+/* ------------------------------------- */
+.upgrade-card, .quest-card, .staking-card, .leaderboard-item {
     background: rgba(0, 0, 0, 0.2);
     padding: 15px;
-    border-radius: 10px;
     margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px solid #558b2f;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #558b2f;
+    transition: background 0.3s;
+}
+
+.upgrade-card:active {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.upgrade-card h3, .quest-card h3, .staking-card h3 {
+    margin-bottom: 3px;
+    font-size: 1em;
+}
+
+.upgrade-card p, .quest-card p {
+    font-size: 0.8em;
+    opacity: 0.8;
 }
 
 .quest-progress {
@@ -360,7 +212,7 @@ body {
     height: 5px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
-    margin-top: 5px;
+    margin-top: 8px;
     overflow: hidden;
 }
 
@@ -372,66 +224,152 @@ body {
     width: 0%;
 }
 
-.leaderboard-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 15px;
-    background: rgba(0, 0, 0, 0.2);
-    margin-bottom: 5px;
-    border-radius: 8px;
-    border: 1px solid #558b2f;
+/* ------------------- */
+/* --- HALAMAN STAKING --- */
+/* ------------------- */
+.staking-info p {
+    margin-bottom: 15px;
+    text-align: center;
+    opacity: 0.9;
 }
 
+.staked-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd54f;
+    margin-bottom: 15px;
+}
+
+.staking-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+#stake-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #558b2f;
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1em;
+}
+
+.stake-btn {
+    background: #8bc34a;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ----------------------- */
+/* --- HALAMAN LEADERBOARD --- */
+/* ----------------------- */
 .leaderboard-rank {
     font-weight: bold;
     color: #ffd54f;
+    margin-right: 10px;
 }
 
-.game-section {
-    display: block !important;
+
+/* -------------------------------- */
+/* --- MENU NAVIGASI BAWAH (BARU) --- */
+/* -------------------------------- */
+.tab-container {
+    position: fixed; /* Menempel di layar */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px); /* Efek blur untuk browser modern */
+    -webkit-backdrop-filter: blur(10px);
+    margin: 10px;
+    border-radius: 20px;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    padding: 5px;
 }
 
-.plant-evolution {
-    font-size: 60px;
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 5px;
+    border-radius: 15px;
+    cursor: pointer;
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
 }
 
-/* Responsive Design */
+.tab i {
+    font-size: 20px; /* Ukuran ikon diperbesar sedikit */
+}
+
+.tab span {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.tab.active {
+    background: rgba(139, 195, 74, 0.5); /* Warna hijau yang lebih jelas */
+}
+
+.tab:not(.active) {
+    color: #c8e6c9; /* Warna ikon dan teks yang tidak aktif */
+    opacity: 0.8;
+}
+
+/* ------------------- */
+/* --- NOTIFIKASI --- */
+/* ------------------- */
+.notification {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.5s, transform 0.5s;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+
+/* ------------------- */
+/* --- RESPONSIVE --- */
+/* ------------------- */
 @media (max-width: 400px) {
     .container {
         padding: 10px;
     }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .upgrades-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .taro-plant {
-        font-size: 60px;
-    }
-    
+
     .header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        padding: 10px;
     }
-    
-    .wallet-info {
-        text-align: center;
+
+    .logo h1 {
+        font-size: 16px;
     }
-}
 
-/* Taro Plant Evolution Animation */
-@keyframes growPlant {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
+    .tap-area {
+        height: 220px;
+    }
 
-.growing {
-    animation: growPlant 0.3s ease-in-out;
+    .plant-evolution {
+        font-size: 70px;
+    }
 }
