@@ -1,0 +1,437 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #2d5a27, #3a7a32, #4a9a3c);
+    color: white;
+    min-height: 100vh;
+    padding: 10px;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo i {
+    font-size: 24px;
+    color: #8bc34a;
+}
+
+.logo h1 {
+    font-size: 18px;
+}
+
+.wallet-info {
+    text-align: right;
+}
+
+.wallet-address {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.connect-btn {
+    background: linear-gradient(45deg, #8bc34a, #689f38);
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+}
+
+.connect-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+}
+
+.reset-btn {
+    background: #d32f2f;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 10px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #8bc34a;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.tap-area {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s;
+    border: 2px solid #8bc34a;
+}
+
+.tap-area:active {
+    transform: scale(0.95);
+}
+
+.taro-plant {
+    font-size: 80px;
+    margin-bottom: 15px;
+    display: inline-block;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 0 10px rgba(139, 195, 74, 0.5));
+}
+
+.tap-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #c5e1a5;
+}
+
+.energy-bar-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.energy-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8bc34a, #689f38);
+    border-radius: 5px;
+    width: 100%;
+    transition: width 0.5s;
+}
+
+.upgrades-section {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: #8bc34a;
+}
+
+.upgrades-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.upgrade-card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid #558b2f;
+}
+
+.upgrade-card:hover {
+    transform: translateY(-5px);
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #8bc34a;
+}
+
+.upgrade-card i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #ffd54f;
+}
+
+.upgrade-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.upgrade-cost {
+    font-size: 12px;
+    color: #ffd54f;
+    margin-bottom: 10px;
+}
+
+.upgrade-level {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.staking-section {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid #558b2f;
+}
+
+.staking-input {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.staking-input input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.staking-input input::placeholder {
+    color: #ccc;
+}
+
+.staking-input button {
+    background: linear-gradient(45deg, #ffd54f, #ffb300);
+    border: none;
+    color: black;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.staking-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.floating-text {
+    position: absolute;
+    font-weight: bold;
+    pointer-events: none;
+    animation: floatUp 1s forwards;
+    z-index: 10;
+    font-size: 18px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 10px;
+    z-index: 100;
+    animation: fadeInOut 3s forwards;
+    display: none;
+    border: 1px solid #8bc34a;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; top: 10px; }
+    10% { opacity: 1; top: 20px; }
+    90% { opacity: 1; top: 20px; }
+    100% { opacity: 0; top: 10px; }
+}
+
+.tab-container {
+    display: flex;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 5px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 12px;
+}
+
+.tab.active {
+    background: rgba(139, 195, 74, 0.5);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.quest-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #558b2f;
+}
+
+.quest-progress {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.quest-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8bc34a, #689f38);
+    border-radius: 3px;
+    transition: width 0.5s;
+    width: 0%;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 5px;
+    border-radius: 8px;
+    border: 1px solid #558b2f;
+}
+
+.leaderboard-rank {
+    font-weight: bold;
+    color: #ffd54f;
+}
+
+.game-section {
+    display: block !important;
+}
+
+.plant-evolution {
+    font-size: 60px;
+    transition: all 0.3s;
+}
+
+/* Responsive Design */
+@media (max-width: 400px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .upgrades-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .taro-plant {
+        font-size: 60px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .wallet-info {
+        text-align: center;
+    }
+}
+
+/* Taro Plant Evolution Animation */
+@keyframes growPlant {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.growing {
+    animation: growPlant 0.3s ease-in-out;
+}
