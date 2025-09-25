@@ -45,19 +45,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // bottom nav
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const pid = btn.dataset.page;
-      const target = document.getElementById(pid + 'Page');
-      if (target) target.classList.add('active');
-      document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-      btn.classList.add('active');
-      if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
-    });
-  });
-}); 
+  // Bottom nav dengan event delegation
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('nav-btn')) {
+    const pid = e.target.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+    
+    const target = document.getElementById(pid + 'Page');
+    if (target) target.classList.add('active');
+    e.target.classList.add('active');
+
+    if (pid === 'history' && typeof renderHistory === 'function') {
+      renderHistory();
+    }
+  }
+});
 // Di akhir file main.js
 document.getElementById('refreshGridBtn').addEventListener('click', () => {
     const cost = GAME_CONFIG.REFRESH_GRID_COST;
