@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TARO Tap Miner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <div>
+                    <h1>TARO Tap Miner</h1>
+                    <div class="wallet-address" id="wallet-address">Not connected</div>
+                </div>
+            </div>
+            <div class="wallet-info">
+                <button class="connect-btn" id="connect-btn">Connect Wallet</button>
+                <button class="reset-btn" onclick="resetGame()">Reset</button>
+            </div>
+        </div>
+
+        <div class="game-section" id="game-section">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-bolt"></i>
+                    <div class="stat-value" id="energy-value">100/100</div>
+                    <div class="stat-label">ENERGY</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-value" id="balance-value">0.00</div>
+                    <div class="stat-label">TRO BALANCE</div>
+                </div>
+            </div>
+
+            <div class="tap-area" id="tap-area">
+                <div class="taro-plant" id="taro-plant">🌱</div>
+                <div class="tap-text">TAP TO GROW TARO!</div>
+                <div class="energy-bar-container">
+                    <div class="energy-bar" id="energy-bar"></div>
+                </div>
+            </div>
+
+            <div class="tab-container">
+                <div class="tab active" data-tab="upgrades">Upgrades</div>
+                <div class="tab" data-tab="staking">Staking</div>
+                <div class="tab" data-tab="quests">Quests</div>
+                <div class="tab" data-tab="leaderboard">Leaderboard</div>
+            </div>
+
+            <div class="tab-content active" id="upgrades-tab">
+                <div class="upgrades-section">
+                    <div class="upgrades-grid">
+                        <div class="upgrade-card" data-upgrade="capacity">
+                            <i class="fas fa-battery-full"></i>
+                            <div class="upgrade-name">Energy Capacity</div>
+                            <div class="upgrade-cost" id="capacity-cost">50 TRO</div>
+                            <div class="upgrade-level">Level <span id="capacity-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="power">
+                            <i class="fas fa-seedling"></i>
+                            <div class="upgrade-name">Grow Power</div>
+                            <div class="upgrade-cost" id="power-cost">100 TRO</div>
+                            <div class="upgrade-level">Level <span id="power-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="speed">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <div class="upgrade-name">Recharge Speed</div>
+                            <div class="upgrade-cost" id="speed-cost">150 TRO</div>
+                            <div class="upgrade-level">Level <span id="speed-level">1</span></div>
+                        </div>
+                        <div class="upgrade-card" data-upgrade="luck">
+                            <i class="fas fa-clover"></i>
+                            <div class="upgrade-name">Lucky Harvest</div>
+                            <div class="upgrade-cost" id="luck-cost">200 TRO</div>
+                            <div class="upgrade-level">Level <span id="luck-level">1</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="staking-tab">
+                <div class="staking-section">
+                    <div class="section-title">
+                        <i class="fas fa-piggy-bank"></i>
+                        <h2>Staking Farm</h2>
+                    </div>
+                    <p>Stake your TRO to grow passive income!</p>
+                    
+                    <div class="staking-input">
+                        <input type="number" id="stake-amount" placeholder="TRO to stake" min="1">
+                        <button id="stake-btn">Stake</button>
+                    </div>
+                    
+                    <div class="staking-info">
+                        <div>APY: <span style="color: #00ff88;">15%</span></div>
+                        <div>Staked: <span id="staked-amount">0</span> TRO</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="quests-tab">
+                <div class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    <h2>Daily Harvest</h2>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Harvest 100 times</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-tap-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: 10 TRO</div>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Upgrade 3 tools</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-upgrade-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: 25 TRO</div>
+                </div>
+                
+                <div class="quest-item">
+                    <div>
+                        <div>Stake 50 TRO</div>
+                        <div class="quest-progress">
+                            <div class="quest-progress-bar" id="quest-stake-bar"></div>
+                        </div>
+                    </div>
+                    <div>Reward: 15 TRO</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="leaderboard-tab">
+                <div class="section-title">
+                    <i class="fas fa-trophy"></i>
+                    <h2>Farmer Leaderboard</h2>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div><span class="leaderboard-rank">1.</span> TaroMaster</div>
+                    <div>1,245 TRO</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div><span class="leaderboard-rank">2.</span> GreenThumb</div>
+                    <div>987 TRO</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div><span class="leaderboard-rank">3.</span> HarvestKing</div>
+                    <div>756 TRO</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div><span class="leaderboard-rank">4.</span> TaroFarmer</div>
+                    <div>632 TRO</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div><span class="leaderboard-rank">5.</span> You</div>
+                    <div id="user-rank">0 TRO</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>
