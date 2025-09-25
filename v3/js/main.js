@@ -26,17 +26,18 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawAmount.value = v || 1;
   });
 
-  attach('refreshGridBtn', 'click', () => {
-    const cost = GAME_CONFIG.REFRESH_GRID_COST;
-    if (points >= cost) {
-      points -= cost;
-      resetMineGrid();
-      updateUI();
-      saveToStorage();
-    } else {
-      alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
-    }
-  });
+attach('refreshGridBtn', 'click', () => {
+  const cost = GAME_CONFIG.REFRESH_GRID_COST;
+  if (points >= cost) {
+    points -= cost;
+    resetMineGrid();
+    updateUI();
+    saveToStorage();
+    showMessage('mineMessage', '✅ Block baru!', 1500);
+  } else {
+    showMessage('mineMessage', GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost), 2000);
+  }
+});
 
   // navigation submenu (safe)
   const navMap = {
