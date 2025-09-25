@@ -4,7 +4,6 @@
 function resetMineGrid() {
   const mineAreaEl = document.getElementById('mineArea');
   if (!mineAreaEl) return;
-
   mineAreaEl.innerHTML = '';
   for (let i = 0; i < 24; i++) {
     const cell = document.createElement('div');
