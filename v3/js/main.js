@@ -15,14 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
   attach('confirmYes', 'click', processWithdrawal);
   attach('confirmNo', 'click', () => { const modal = document.getElementById('confirmModal'); if (modal) modal.style.display = 'none'; });
 
-  // ✅ Event delegation untuk refreshGridBtn (dalam DOMContentLoaded)
-document.addEventListener('click', (e) => {
-  if (e.target.id === 'refreshGridBtn') {
-    resetMineGrid();
-    updateUI();
-    saveToStorage();
-  }
-});
   const voucherCode = document.getElementById('voucherCode');
   if (voucherCode) voucherCode.addEventListener('keypress', (e) => { if (e.key === 'Enter') redeemVoucher(); });
 
@@ -65,4 +57,15 @@ document.addEventListener('click', (e) => {
       if (pid === 'history' && typeof renderHistory === 'function') renderHistory();
     });
   });
-}); // 👈 INI HARUS DI AKHIR — SETELAH SEMUA KODE
+}); 
+// Di akhir file main.js
+document.getElementById('refreshGridBtn').addEventListener('click', () => {
+    const cost = GAME_CONFIG.REFRESH_GRID_COST;
+    if (points >= cost) {
+        points -= cost;
+        resetMineGrid();
+        updateUI();
+    } else {
+        alert(GAME_CONFIG.ALERT_MESSAGES.INSUFFICIENT_POINTS_REFRESH(cost));
+    }
+});
