@@ -176,7 +176,7 @@ function updateUI() {
   }
 }
 
-// Tampilkan modal konfirmasi penarikan (minimal 1000 TRO)
+// Tampilkan modal konfirmasi penarikan (minimal 10 TRO)
 function showWithdrawConfirm() {
   const address = document.getElementById('tonAddress')?.value?.trim();
   const amount = parseInt(document.getElementById('withdrawAmount')?.value) || 0;
@@ -189,8 +189,8 @@ function showWithdrawConfirm() {
     showMessage('withdrawMessage', GAME_CONFIG.ALERT_MESSAGES.INVALID_TON, 2500);
     return;
   }
-  if (amount < 1000) {
-    showMessage('withdrawMessage', '❌ Minimal penarikan: 1000 TRO!', 2500);
+  if (amount < 10) {
+    showMessage('withdrawMessage', '❌ Minimal penarikan: 10 TRO!', 2500);
     return;
   }
   if (amount > taroTokens) {
