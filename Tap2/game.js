@@ -16,12 +16,23 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// --- HELPER: Tambahkan listener tap yang kompatibel Telegram ---
+function addTapListener(element, handler) {
+    element.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handler(e);
+    }, { passive: false });
+    element.addEventListener('mousedown', handler);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // --- INISIALISASI GAME ---
-    document.body.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    // Ganti preventDefault touchmove dengan CSS touch-action
+    document.body.style.touchAction = 'manipulation';
 
     const tg = window.Telegram.WebApp;
     tg.expand();
+    tg.ready(); // Penting untuk Telegram WebApp
 
     // --- Dapatkan USER ID ---
     let userId = null;
@@ -30,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = String(tg.initDataUnsafe.user.id);
             isTelegram = true;
-            // Tampilkan ID di UI (opsional)
             document.getElementById('wallet-address').textContent = `ID: ${userId}`;
         }
     } catch (e) {
@@ -38,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (!userId) {
-        // Fallback: gunakan localStorage dengan ID dummy (untuk testing di browser)
         userId = 'local_user';
         document.getElementById('wallet-address').textContent = "Local Mode";
     }
@@ -94,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const stakeInput = document.getElementById('stake-input');
     const stakedAmountDisplay = document.getElementById('staked-amount');
 
-    // --- FLOATING NUMBER CSS (Hanya sekali) ---
+    // --- FLOATING NUMBER CSS ---
     if (!document.querySelector('#floating-style')) {
         const style = document.createElement('style');
         style.id = 'floating-style';
@@ -132,14 +141,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 tg.HapticFeedback.impactOccurred('light');
             }
 
-            showFloatingNumber(event.clientX, event.clientY, effectiveGrowPower);
+            // Gunakan clientX/Y dari touch jika ada
+            const x = event.clientX || (event.touches && event.touches[0] ? event.touches[0].clientX : window.innerWidth / 2);
+            const y = event.clientY || (event.touches && event.touches[0] ? event.touches[0].clientY : window.innerHeight / 2);
+
+            showFloatingNumber(x, y, effectiveGrowPower);
 
             taroPlant.style.transform = 'scale(0.9)';
             setTimeout(() => { taroPlant.style.transform = 'scale(1)'; }, 100);
 
             checkQuests();
             updateUI();
-            saveGameToFirebase(); // Simpan langsung
+            saveGameToFirebase();
         } else {
             showNotification("Not enough energy! ⚡️");
         }
@@ -243,22 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
 
-    function setupTabs() {
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
-                tab.classList.add('active');
-                const tabId = tab.getAttribute('data-tab');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-    }
-
     // --- QUEST & DATA MANAGEMENT ---
     function checkQuests() {
         if (!quests.tap100.completed && gameState.totalTaps >= quests.tap100.target) {
@@ -286,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FIREBASE FUNCTIONS ---
     function saveGameToFirebase() {
         if (!isTelegram && userId === 'local_user') {
-            // Fallback ke localStorage jika bukan di Telegram
             localStorage.setItem('taroGameState', JSON.stringify(gameState));
             localStorage.setItem('taroQuests', JSON.stringify(quests));
             return;
@@ -299,14 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
             lastActive: firebase.database.ServerValue.TIMESTAMP
         }).catch(err => {
             console.error("Firebase save error:", err);
-            showNotification("⚠️ Save failed. Retrying...");
         });
     }
 
     function loadGameFromFirebase() {
         return new Promise((resolve) => {
             if (!isTelegram && userId === 'local_user') {
-                // Fallback
                 const savedState = localStorage.getItem('taroGameState');
                 const savedQuests = localStorage.getItem('taroQuests');
                 if (savedState) gameState = JSON.parse(savedState);
@@ -323,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         gameState = data.gameState;
                         quests = data.quests || defaultQuests;
                     } else {
-                        // Data baru — simpan default
                         userRef.set({
                             gameState: defaultGameState,
                             quests: defaultQuests,
@@ -334,7 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(err => {
                     console.error("Firebase load error:", err);
-                    showNotification("⚠️ Load failed. Using local data.");
                     resolve();
                 });
         });
@@ -345,7 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
         leaderboardRef.once('value')
             .then(snapshot => {
                 const leaderboardContainer = document.querySelector('#leaderboard-tab');
-                // Kosongkan kecuali judul
                 leaderboardContainer.innerHTML = `
                     <div class="section-title">
                         <i class="fas fa-trophy"></i>
@@ -364,12 +355,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Urutkan descending
                 users.sort((a, b) => b.balance - a.balance);
 
                 users.forEach((user, index) => {
                     const isMe = (user.id === userId);
-                    const displayName = isMe ? "You" : `Player ${user.id.slice(0, 5)}`;
+                    const displayName = isMe ? "You" : `Player ${user.id.substring(0, 5)}`;
                     const rank = index + 1;
 
                     const item = document.createElement('div');
@@ -381,11 +371,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     leaderboardContainer.appendChild(item);
                 });
 
-                // Update "You" di bagian bawah (opsional)
                 userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
             })
             .catch(err => {
-                console.error("Leaderboard load error:", err);
+                console.error("Leaderboard error:", err);
             });
     }
 
@@ -394,23 +383,38 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("🌱 TARO Tap Miner Initializing...");
         await loadGameFromFirebase();
         
-        tapArea.addEventListener('click', handleTap);
+        // Gunakan addTapListener untuk semua interaksi
+        addTapListener(tapArea, handleTap);
+        
         document.querySelectorAll('.upgrade-card').forEach(card => {
-            card.addEventListener('click', () => {
+            addTapListener(card, () => {
                 buyUpgrade(card.getAttribute('data-upgrade'));
             });
         });
-        stakeBtn.addEventListener('click', stakeTokens);
         
-        setupTabs();
+        addTapListener(stakeBtn, stakeTokens);
+        
+        // Setup tabs
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            addTapListener(tab, () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
         updateUI();
         checkQuests();
-        loadLeaderboard(); // Muat leaderboard saat mulai
+        loadLeaderboard();
 
         setInterval(rechargeEnergy, 1000);
         setInterval(() => {
             saveGameToFirebase();
-            loadLeaderboard(); // Refresh leaderboard tiap 10 detik
+            loadLeaderboard();
         }, 10000);
     }
     
