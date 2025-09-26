@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
         troBalance: 0,
         energy: 1000,
         energyMax: 1000,
-        growPower: 1,      // Poin per tap
-        rechargeRate: 2,   // Energi per detik
+        growPower: 0.01,      // Poin per tap
+        rechargeRate: 1,   // Energi per detik
         upgrades: {
             capacity: { level: 1, cost: 50 },
             power:    { level: 1, cost: 50 },
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Naikkan biaya untuk level selanjutnya
-            upgrade.cost = Math.floor(upgrade.cost * 1.5);
+            upgrade.cost = Math.floor(upgrade.cost * 2.5);
 
             showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} Upgraded!`);
             checkQuests();
