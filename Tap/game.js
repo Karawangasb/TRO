@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     gameState.energyMax = 100 + (upgrade.level - 1) * 20;
                     break;
                 case 'power':
-                    gameState.growPower = 1 + (upgrade.level - 1);
+                    gameState.growPower = 0.1 + (upgrade.level - 1);
                     break;
                 case 'speed':
                     gameState.rechargeRate = 1 + (upgrade.level - 1);
