@@ -4,7 +4,9 @@
 
 // --- Firebase Imports (v10.7.1 modular) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, orderBy, limit, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 
 // --- Konfigurasi Firebase ---
 const firebaseConfig = {
@@ -189,6 +191,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function loadLeaderboard() {
+  const q = query(collection(db, "users"), orderBy("troBalance", "desc"), limit(10));
+  onSnapshot(q, (snapshot) => {
+    const container = document.getElementById("leaderboard-list");
+    container.innerHTML = "";
+    let rank = 1;
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      container.innerHTML += `
+        <div class="leaderboard-item">
+          <div><span class="leaderboard-rank">${rank}.</span> ${data.name || "Anon"}</div>
+          <div>${Math.floor(data.troBalance)} TRO</div>
+        </div>
+      `;
+      rank++;
+    });
+  });
+}
+
+
   // ========================
   // --- UI FUNCTIONS ---
   // ========================
@@ -274,15 +296,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- FIRESTORE SAVE/LOAD ---
   // ========================
 
-  async function saveGame() {
-    try {
-      const gameStateRef = doc(db, "users", userId);
-      await setDoc(gameStateRef, { ...gameState, quests });
-      console.log("💾 Game saved");
-    } catch (err) {
-      console.error("❌ Save error:", err);
-    }
+async function saveGame() {
+  try {
+    const gameStateRef = doc(db, "users", userId);
+    await setDoc(gameStateRef, {
+      ...gameState,
+      quests,
+      name: tg.initDataUnsafe?.user?.first_name || "Guest"
+    });
+    console.log("💾 Game saved");
+  } catch (err) {
+    console.error("❌ Save error:", err);
   }
+}
 
   async function loadGame() {
     try {
@@ -319,6 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTabs();
     updateUI();
     checkQuests();
+    initGame()
 
     setInterval(rechargeEnergy, 1000);
     setInterval(saveGame, 10000);
