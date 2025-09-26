@@ -275,13 +275,54 @@ body {
 /* ----------------------- */
 /* --- HALAMAN LEADERBOARD --- */
 /* ----------------------- */
-.leaderboard-rank {
-    font-weight: bold;
-    color: #ffd54f;
-    margin-right: 10px;
-}
-
-
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        .leaderboard-item.current-user {
+            background: rgba(76, 175, 80, 0.15);
+            border-left: 3px solid #4CAF50;
+            font-weight: bold;
+        }
+        .leaderboard-rank {
+            font-weight: bold;
+            color: #ffd700;
+            margin-right: 8px;
+        }
+        .current-user-rank {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid #444;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .notification.show {
+            opacity: 1;
+        }
 /* -------------------------------- */
 /* --- MENU NAVIGASI BAWAH (BARU) --- */
 /* -------------------------------- */
