@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
         energyCost: 1,
         rechargeRate: 1,
         upgrades: {
-            capacity: { level: 1, cost: 50 },
-            power:    { level: 1, cost: 50 },
-            speed:    { level: 1, cost: 75 }
+            capacity: { level: 1, cost: 5 },
+            power:    { level: 1, cost: 5 },
+            speed:    { level: 1, cost: 7 }
         },
         stakedAmount: 0,
         lastUpdate: Date.now(),
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let quests = {
         tap100:    { target: 100, reward: 10, completed: false },
         upgrade3:  { target: 3, reward: 150, completed: false },
-        stake50:   { target: 50, reward: 50, completed: false }
+        stake50:   { target: 50, reward: 5, completed: false }
     };
 
     // --- DOM ELEMENTS ---
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateUI();
         checkQuests();
 
-        setInterval(rechargeEnergy, 100);
+        setInterval(rechargeEnergy, 1000);
         setInterval(saveGame, 10000);
     }
     
