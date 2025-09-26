@@ -247,6 +247,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateUI() {
     balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
+    const balanceValueStake = document.getElementById("balance-value-stake");
+if (balanceValueStake) {
+  balanceValueStake.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
+}
     energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
     growPowerValue.textContent = gameState.growPower;
 
