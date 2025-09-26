@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Terapkan efek upgrade
             switch(type) {
                 case 'capacity':
-                    gameState.energyMax = 100 + (upgrade.level - 1) * 500;
+                    gameState.energyMax = 100 + (upgrade.level - 1) * 20;
                     break;
                 case 'power':
                     gameState.growPower = 1 + (upgrade.level - 1);
