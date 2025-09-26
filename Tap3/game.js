@@ -333,23 +333,21 @@ async function saveGame() {
   // ========================
 
   async function initGame() {
-    console.log("🌱 TARO Tap Miner Initializing...");
-    await loadGame();
+  console.log("🌱 TARO Tap Miner Initializing...");
+  detectUser();
+  await loadGame();
 
-    tapArea.addEventListener("click", handleTap);
-    document.querySelectorAll(".upgrade-card").forEach((card) => {
-      card.addEventListener("click", () => buyUpgrade(card.getAttribute("data-upgrade")));
-    });
-    stakeBtn.addEventListener("click", stakeTokens);
+  tapArea.addEventListener("click", handleTap);
 
-    setupTabs();
-    updateUI();
-    checkQuests();
-    initGame()
+  document.querySelectorAll(".upgrade-card").forEach((card) => {
+    card.addEventListener("click", () => buyUpgrade(card.getAttribute("data-upgrade")));
+  });
 
-    setInterval(rechargeEnergy, 1000);
-    setInterval(saveGame, 10000);
-  }
+  document.getElementById("stake-btn").addEventListener("click", stakeTokens);
 
-  initGame();
-});
+  updateUI();
+  checkQuests();
+  initLeaderboard();
+}
+
+initGame();
