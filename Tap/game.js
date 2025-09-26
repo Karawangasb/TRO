@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- QUEST SYSTEM ---
     let quests = {
-        tap100:    { target: 100, reward: 100, completed: false },
-        upgrade3:  { target: 3, reward: 250, completed: false },
-        stake50:   { target: 50, reward: 150, completed: false }
+        tap100:    { target: 100, reward: 50, completed: false },
+        upgrade3:  { target: 3, reward: 150, completed: false },
+        stake50:   { target: 50, reward: 50, completed: false }
     };
 
     // --- DOM ELEMENTS ---
@@ -159,13 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Terapkan efek upgrade
             switch(type) {
                 case 'capacity':
-                    gameState.energyMax = 1000 + (upgrade.level - 1) * 500;
+                    gameState.energyMax = 100 + (upgrade.level - 1) * 500;
                     break;
                 case 'power':
                     gameState.growPower = 1 + (upgrade.level - 1);
                     break;
                 case 'speed':
-                    gameState.rechargeRate = 2 + (upgrade.level - 1);
+                    gameState.rechargeRate = 1 + (upgrade.level - 1);
                     break;
             }
             
