@@ -2,12 +2,10 @@
 // --- TARO TAP MINER - GAME.JS --- //
 // ================================= //
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
   authDomain: "taro-9b8c5.firebaseapp.com",
+  databaseURL: "https://taro-9b8c5-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "taro-9b8c5",
   storageBucket: "taro-9b8c5.firebasestorage.app",
   messagingSenderId: "856610794983",
