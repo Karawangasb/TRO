@@ -94,24 +94,49 @@
                 </div>
             </div>
 
-            <!-- STAKING TAB -->
-            <div class="tab-content" id="staking-tab">
-                <div class="section-title">
-                    <i class="fas fa-piggy-bank"></i>
-                    <h2>Staking</h2>
-                </div>
-                <div class="staking-info">
-                    <p>Stake your TRO to earn passive income. Estimated APY: 25%</p>
-                </div>
-                <div class="staking-card">
-                    <h3>Staked Amount</h3>
-                    <div class="staked-value" id="staked-amount">0 TRO</div>
-                    <div class="staking-input-container">
-                        <input type="number" id="stake-input" placeholder="Amount to stake">
-                        <button class="stake-btn" id="stake-btn">Stake</button>
-                    </div>
-                </div>
-            </div>
+<!-- STAKING TAB -->
+<div class="tab-content" id="staking-tab">
+  <div class="section-title">
+    <i class="fas fa-piggy-bank"></i>
+    <h2>Staking</h2>
+  </div>
+
+  <div class="staking-info">
+    <p>Stake your TRO to earn passive income.</p>
+    <div class="reward-estimate">
+      <i class="fas fa-chart-line"></i>
+      <span>Est. Reward: <strong id="reward-estimate">0.00</strong> TRO/min</span>
+    </div>
+  </div>
+
+  <div class="staking-summary">
+    <div class="summary-card">
+      <div class="summary-label">Your Balance</div>
+      <div class="summary-value" id="balance-value-stake">0 TRO</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Staked</div>
+      <div class="summary-value" id="staked-amount">0 TRO</div>
+    </div>
+  </div>
+
+  <div class="staking-actions">
+    <div class="input-group">
+      <input type="number" id="stake-input" placeholder="Enter amount to stake" min="0" step="1">
+      <button class="btn-primary" id="stake-btn">Stake</button>
+    </div>
+    <button class="btn-secondary" id="unstake-btn">Unstake All</button>
+  </div>
+
+  <div class="staking-benefits">
+    <h3>Benefits</h3>
+    <ul>
+      <li>✅ Earn passive income every 10 seconds</li>
+      <li>✅ Boost your tap rewards by up to +10%</li>
+      <li>✅ Complete quests & climb the leaderboard</li>
+    </ul>
+  </div>
+</div>
 
             <!-- QUESTS TAB -->
             <div class="tab-content" id="quests-tab">
