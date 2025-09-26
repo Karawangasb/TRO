@@ -2,21 +2,20 @@
 // --- TARO TAP MINER - GAME.JS --- //
 // ================================= //
 
-// --- FIREBASE & TONKEEPER CONFIGURATION ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
-    apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
-    authDomain: "taro-9b8c5.firebaseapp.com",
-    databaseURL: "https://taro-9b8c5-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "taro-9b8c5",
-    storageBucket: "taro-9b8c5.firebasestorage.app",
-    messagingSenderId: "856610794983",
-    appId: "1:856610794983:web:49c9eab3d62af46f5da142"
+  apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
+  authDomain: "taro-9b8c5.firebaseapp.com",
+  projectId: "taro-9b8c5",
+  storageBucket: "taro-9b8c5.firebasestorage.app",
+  messagingSenderId: "856610794983",
+  appId: "1:856610794983:web:49c9eab3d62af46f5da142"
 };
 
-// Inisialisasi Firebase
-const firebaseApp = firebase.initializeApp(firebaseConfig);
-const db = firebaseApp.database();
-// ------------------------------------------
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', function() {
     // --- INISIALISASI GAME ---
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showFloatingNumber(x, y, value) {
+        function showFloatingNumber(x, y, value) {
         const floatingNumber = document.createElement('div');
         floatingNumber.textContent = `+${value.toFixed(2)}`;
         floatingNumber.className = 'floating-number';
@@ -117,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
             floatingNumber.remove();
         }, 1000);
     }
-
     // Tambahkan CSS untuk floating-number
     const style = document.createElement('style');
     style.innerHTML = `
@@ -197,26 +195,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- UI FUNCTIONS ---
-function updateUI() {
-    balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
-    energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
-    growPowerValue.textContent = gameState.growPower;
-    userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
+    function updateUI() {
+        balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
+        energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
+        growPowerValue.textContent = gameState.growPower;
+        userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
 
-    const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
-    energyBar.style.width = `${energyPercentage}%`;
+        const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
+        energyBar.style.width = `${energyPercentage}%`;
 
-    capacityLevel.textContent = gameState.upgrades.capacity.level;
-    powerLevel.textContent = gameState.upgrades.power.level;
-    speedLevel.textContent = gameState.upgrades.speed.level;
+        capacityLevel.textContent = gameState.upgrades.capacity.level;
+        powerLevel.textContent = gameState.upgrades.power.level;
+        speedLevel.textContent = gameState.upgrades.speed.level;
 
-    // ini untuk menampilkan harga
-    capacityCost.textContent = gameState.upgrades.capacity.cost;
-    powerCost.textContent = gameState.upgrades.power.cost;
-    speedCost.textContent = gameState.upgrades.speed.cost;
+        // ini untuk menampilkan harga
+        capacityCost.textContent = gameState.upgrades.capacity.cost;
+        powerCost.textContent = gameState.upgrades.power.cost;
+        speedCost.textContent = gameState.upgrades.speed.cost;
 
-    stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
-}
+        stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
+    }
 
     function showNotification(message) {
         notification.textContent = message;
@@ -241,8 +239,7 @@ function updateUI() {
             });
         });
     }
-
-    // --- QUEST & DATA MANAGEMENT ---
+        // --- QUEST & DATA MANAGEMENT ---
     function checkQuests() {
         if (!quests.tap100.completed) {
             const progress = (gameState.totalTaps / quests.tap100.target) * 100;
@@ -278,26 +275,33 @@ function updateUI() {
         }
     }
 
-    function saveGame() {
-        localStorage.setItem('taroGameState', JSON.stringify(gameState));
-        localStorage.setItem('taroQuests', JSON.stringify(quests));
+    async function saveGame() {
+        const userId = 'user123'; // Ganti dengan ID pengguna yang sesuai
+        const gameStateRef = doc(db, 'users', userId);
+        await setDoc(gameStateRef, gameState);
+        const questsRef = doc(db, 'users', userId, 'quests', 'quests');
+        await setDoc(questsRef, quests);
     }
 
-    function loadGame() {
-        const savedState = localStorage.getItem('taroGameState');
-        const savedQuests = localStorage.getItem('taroQuests');
-        if (savedState) {
-            gameState = JSON.parse(savedState);
+    async function loadGame() {
+        const userId = 'user123'; // Ganti dengan ID pengguna yang sesuai
+        const gameStateRef = doc(db, 'users', userId);
+        const gameStateSnap = await getDoc(gameStateRef);
+        if (gameStateSnap.exists()) {
+            gameState = gameStateSnap.data();
         }
-        if (savedQuests) {
-            quests = JSON.parse(savedQuests);
+
+        const questsRef = doc(db, 'users', userId, 'quests', 'quests');
+        const questsSnap = await getDoc(questsRef);
+        if (questsSnap.exists()) {
+            quests = questsSnap.data();
         }
     }
 
     // --- INITIALIZATION ---
-    function initGame() {
+    async function initGame() {
         console.log("🌱 TARO Tap Miner Initializing...");
-        loadGame();
+        await loadGame();
         
         tapArea.addEventListener('click', handleTap);
         document.querySelectorAll('.upgrade-card').forEach(card => {
