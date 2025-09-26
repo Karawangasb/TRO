@@ -1,0 +1,382 @@
+/* ------------------------- */
+/* --- GAYA DASAR & FONT --- */
+/* ------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Mencegah seleksi teks yang tidak diinginkan saat tapping cepat */
+    user-select: none; 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    /* Menghilangkan highlight biru saat disentuh di mobile */
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: linear-gradient(135deg, #2d5a27, #3a7a32, #4a9a3c);
+    color: white;
+    min-height: 100vh;
+    /* Memberi ruang di bawah agar konten tidak tertutup menu navigasi */
+    padding-bottom: 90px;
+}
+
+.container {
+    max-width: 480px; /* Sedikit lebih lebar untuk perangkat modern */
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* ------------------- */
+/* --- BAGIAN HEADER --- */
+/* ------------------- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo i {
+    font-size: 28px;
+    color: #8bc34a;
+}
+
+.logo h1 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.wallet-address {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.connect-btn {
+    background: #8bc34a;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.connect-btn:active {
+    transform: scale(0.95);
+}
+
+/* ------------------------ */
+/* --- KONTEN UTAMA & TAB --- */
+/* ------------------------ */
+
+/* Semua konten tab disembunyikan secara default */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+/* Hanya tab dengan class .active yang ditampilkan */
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #c8e6c9;
+}
+
+/* ---------------------------- */
+/* --- HALAMAN UTAMA (HOME/TAP) --- */
+/* ---------------------------- */
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    flex: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-card i {
+    font-size: 20px;
+    color: #8bc34a;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.tap-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 250px;
+    cursor: pointer;
+    position: relative;
+}
+
+.plant-evolution {
+    font-size: 80px;
+    transition: transform 0.1s ease;
+}
+
+.upgrade-cost {
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: bold;
+    margin-top: 4px;
+    }
+
+.tap-area:active .plant-evolution {
+    transform: scale(0.9);
+}
+
+.energy-bar-container {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 3px;
+    margin-top: 20px;
+}
+
+.energy-bar {
+    height: 10px;
+    background: linear-gradient(90deg, #ffd54f, #ffb300);
+    border-radius: 7px;
+    width: 100%;
+    transition: width 0.5s;
+}
+
+/* ------------------------------------- */
+/* --- KARTU UPGRADE, STAKING, QUEST --- */
+/* ------------------------------------- */
+.upgrade-card, .quest-card, .staking-card, .leaderboard-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px solid #558b2f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s;
+}
+
+.upgrade-card:active {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.upgrade-card h3, .quest-card h3, .staking-card h3 {
+    margin-bottom: 3px;
+    font-size: 1em;
+}
+
+.upgrade-card p, .quest-card p {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.quest-progress {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.quest-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8bc34a, #689f38);
+    border-radius: 3px;
+    transition: width 0.5s;
+    width: 0%;
+}
+
+/* ------------------- */
+/* --- HALAMAN STAKING --- */
+/* ------------------- */
+.staking-info p {
+    margin-bottom: 15px;
+    text-align: center;
+    opacity: 0.9;
+}
+
+.staked-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd54f;
+    margin-bottom: 15px;
+}
+
+.staking-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+#stake-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #558b2f;
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1em;
+}
+
+.stake-btn {
+    background: #8bc34a;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ----------------------- */
+/* --- HALAMAN LEADERBOARD --- */
+/* ----------------------- */
+.leaderboard-rank {
+    font-weight: bold;
+    color: #ffd54f;
+    margin-right: 10px;
+}
+
+
+/* -------------------------------- */
+/* --- MENU NAVIGASI BAWAH (BARU) --- */
+/* -------------------------------- */
+.tab-container {
+    position: fixed; /* Menempel di layar */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px); /* Efek blur untuk browser modern */
+    -webkit-backdrop-filter: blur(10px);
+    margin: 10px;
+    border-radius: 20px;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    padding: 5px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 5px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.tab i {
+    font-size: 20px; /* Ukuran ikon diperbesar sedikit */
+}
+
+.tab span {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.tab.active {
+    background: rgba(139, 195, 74, 0.5); /* Warna hijau yang lebih jelas */
+}
+
+.tab:not(.active) {
+    color: #c8e6c9; /* Warna ikon dan teks yang tidak aktif */
+    opacity: 0.8;
+}
+
+/* ------------------- */
+/* --- NOTIFIKASI --- */
+/* ------------------- */
+.notification {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.5s, transform 0.5s;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+
+/* ------------------- */
+/* --- RESPONSIVE --- */
+/* ------------------- */
+@media (max-width: 400px) {
+    .container {
+        padding: 10px;
+    }
+
+    .header {
+        padding: 10px;
+    }
+
+    .logo h1 {
+        font-size: 16px;
+    }
+
+    .tap-area {
+        height: 220px;
+    }
+
+    .plant-evolution {
+        font-size: 70px;
+    }
+}
