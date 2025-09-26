@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- QUEST SYSTEM ---
     let quests = {
         tap100:    { target: 100, reward: 10, completed: false },
-        upgrade3:  { target: 3, reward: 50, completed: false },
+        upgrade3:  { target: 3, reward: 25, completed: false },
         stake50:   { target: 50, reward: 5, completed: false }
     };
 
