@@ -1,75 +1,37 @@
 // ================================= //
-// --- TARO TAP MINER + FIREBASE + TON --- //
+// --- TARO TAP MINER - GAME.JS --- //
 // ================================= //
 
-// --- TON CONFIGURATION ---
-const TRO_TOKEN_ADDRESS = "EQA0VzztOFRQ_VY9t-UDSWZ5Xu0_Y_Cyk1Xf_e6_I_o7Quu8";
-const MANIFEST_URL = "https://yourdomain.com/tonconnect-manifest.json"; // 🔴 GANTI DENGAN DOMAIN ANDA!
+// --- FIREBASE & TONKEEPER CONFIGURATION ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
+    authDomain: "taro-9b8c5.firebaseapp.com",
+    databaseURL: "https://taro-9b8c5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "taro-9b8c5",
+    storageBucket: "taro-9b8c5.firebasestorage.app",
+    messagingSenderId: "856610794983",
+    appId: "1:856610794983:web:49c9eab3d62af46f5da142"
+};
 
-// --- HELPER: Tambahkan listener tap yang kompatibel mobile & desktop ---
-function addTapListener(element, handler) {
-    const isTouchDevice = ('ontouchstart' in window);
-    if (isTouchDevice) {
-        element.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handler(e);
-        }, { passive: false });
-    } else {
-        element.addEventListener('mousedown', handler);
-    }
-}
-
-// --- FLOATING NUMBER STYLE (sekali saja) ---
-if (!document.querySelector('#taro-floating-style')) {
-    const style = document.createElement('style');
-    style.id = 'taro-floating-style';
-    style.innerHTML = `
-    .floating-number {
-        position: fixed;
-        font-size: 24px;
-        font-weight: bold;
-        color: #fff;
-        text-shadow: 0 0 5px #ffd700;
-        animation: floatUp 1s ease-out forwards;
-        pointer-events: none;
-        z-index: 9999;
-    }
-    @keyframes floatUp {
-        to {
-            transform: translateY(-80px);
-            opacity: 0;
-        }
-    }`;
-    document.head.appendChild(style);
-}
+// Inisialisasi Firebase
+const firebaseApp = firebase.initializeApp(firebaseConfig);
+const db = firebaseApp.database();
+// ------------------------------------------
 
 document.addEventListener('DOMContentLoaded', function() {
-    // --- TELEGRAM INIT ---
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-        tg.expand();
-        tg.ready();
-    }
+    // Mencegah pull-to-refresh dan scroll di WebApp
+    document.body.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
 
-    // --- USER ID (Telegram atau fallback local) ---
-    let userId = null;
-    let isTelegram = false;
-    try {
-        if (tg && tg.initDataUnsafe?.user) {
-            userId = String(tg.initDataUnsafe.user.id);
-            isTelegram = true;
-        }
-    } catch (e) {
-        console.warn("Not in Telegram context");
-    }
-    if (!userId) userId = 'local_user_' + Date.now();
+    // Inisialisasi Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-    // --- DEFAULT GAME STATE ---
-    const defaultGameState = {
+    // --- GAME STATE ---\
+    let gameState = {
         troBalance: 0,
         energy: 100,
         energyMax: 100,
-        growPower: 0.1,
+        growPower: 0.1,      // Poin per tap
         energyCost: 1,
         rechargeRate: 1,
         upgrades: {
@@ -83,359 +45,367 @@ document.addEventListener('DOMContentLoaded', function() {
         totalUpgrades: 0
     };
 
-    const defaultQuests = {
+    // --- QUEST SYSTEM ---\
+    let quests = {
         tap100:    { target: 100, reward: 10, completed: false },
         upgrade3:  { target: 3, reward: 25, completed: false },
         stake50:   { target: 50, reward: 5, completed: false }
     };
 
-    let gameState = JSON.parse(JSON.stringify(defaultGameState));
-    let quests = JSON.parse(JSON.stringify(defaultQuests));
-    let userWalletAddress = null;
-
-    // --- DOM ELEMENTS ---
-    const connectBtn = document.getElementById('connect-btn');
-    const walletAddressEl = document.getElementById('wallet-address');
+    // --- DOM ELEMENTS ---\
     const balanceValue = document.getElementById('balance-value');
     const energyValue = document.getElementById('energy-value');
     const growPowerValue = document.getElementById('grow-power-value');
-    const energyBar = document.getElementById('energy-bar');
+    const rechargeRateValue = document.getElementById('recharge-rate-value');
+    const energyMaxValue = document.getElementById('energy-max-value');
+    const stakedValue = document.getElementById('staked-value');
     const tapArea = document.getElementById('tap-area');
-    const taroPlant = document.getElementById('taro-plant');
-    const notification = document.getElementById('notification');
-    const userRank = document.getElementById('user-rank');
-
-    const capacityLevel = document.getElementById('capacity-level');
-    const powerLevel = document.getElementById('power-level');
-    const speedLevel = document.getElementById('speed-level');
-    const capacityCost = document.getElementById('capacity-cost');
-    const powerCost = document.getElementById('power-cost');
-    const speedCost = document.getElementById('speed-cost');
-
     const stakeBtn = document.getElementById('stake-btn');
-    const stakeInput = document.getElementById('stake-input');
-    const stakedAmountDisplay = document.getElementById('staked-amount');
+    const notificationElement = document.getElementById('notification');
+    
+    // Tonkeeper/Wallet elements
+    const walletAddressDisplay = document.getElementById('wallet-address');
+    const connectBtn = document.getElementById('connect-btn');
 
-    // --- TON CONNECT INIT ---
-    let tonConnectUI = null;
-    if (window.TonConnectUI) {
-        tonConnectUI = new window.TonConnectUI.TonConnectUI({
-            manifestUrl: MANIFEST_URL,
-            buttonRootId: 'connect-btn'
-        });
-
-        tonConnectUI.onStatusChange(wallet => {
-            if (wallet) {
-                userWalletAddress = wallet.account.address;
-                walletAddressEl.textContent = `Connected: ${userWalletAddress.substring(0, 6)}...${userWalletAddress.substring(userWalletAddress.length - 4)}`;
-                saveGameToFirebase(); // Simpan alamat wallet
-            } else {
-                userWalletAddress = null;
-                walletAddressEl.textContent = "Not connected";
-            }
-        });
-    } else {
-        connectBtn.textContent = "TON Wallet Required";
-        connectBtn.disabled = true;
+    // --- HELPER FUNCTIONS ---\
+    function showNotification(message) {
+        notificationElement.textContent = message;
+        notificationElement.classList.add('show');
+        setTimeout(() => {
+            notificationElement.classList.remove('show');
+        }, 3000);
     }
 
-    // --- FIREBASE INIT (pastikan sudah di-load di index.html) ---
-    let database = null;
-    try {
-        if (typeof firebase !== 'undefined') {
-            firebase.initializeApp({
-                apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
-                authDomain: "taro-9b8c5.firebaseapp.com",
-                projectId: "taro-9b8c5",
-                storageBucket: "taro-9b8c5.firebasestorage.app",
-                messagingSenderId: "856610794983",
-                appId: "1:856610794983:web:49c9eab3d62af46f5da142"
-            });
-            database = firebase.database();
-        }
-    } catch (e) {
-        console.warn("Firebase not available, falling back to localStorage");
+    function formatNumber(num) {
+        return Math.floor(num).toLocaleString('en-US');
     }
 
-    // --- WITHDRAW FUNCTION (TON) ---
-    async function withdrawTRO() {
-        if (!userWalletAddress) {
-            showNotification("Connect TON wallet first!");
-            return;
-        }
-        if (gameState.troBalance < 1) {
-            showNotification("Not enough TRO to withdraw!");
-            return;
-        }
-
-        try {
-            const amountNano = Math.floor(gameState.troBalance * 1e9).toString();
-            const tx = {
-                validUntil: Math.floor(Date.now() / 1000) + 300,
-                messages: [{
-                    address: TRO_TOKEN_ADDRESS,
-                    amount: "500000000",
-                    payload: window.btoa(JSON.stringify({
-                        "transfer": {
-                            "query_id": Date.now(),
-                            "amount": amountNano,
-                            "destination": userWalletAddress,
-                            "response_destination": userWalletAddress,
-                            "custom_payload": "",
-                            "forward_ton_amount": "1000000"
-                        }
-                    }))
-                }]
-            };
-
-            const result = await tonConnectUI.sendTransaction(tx);
-            console.log("Withdraw success:", result);
-
-            gameState.troBalance = 0;
-            updateUI();
-            saveGameToFirebase();
-            showNotification(`✅ Withdrawn ${amountNano / 1e9} TRO!`);
-
-        } catch (e) {
-            console.error("Withdraw error:", e);
-            showNotification("❌ Withdraw failed!");
-        }
-    }
-
-    // --- CORE GAME LOGIC ---
+    // --- GAME LOGIC ---\
     function handleTap(event) {
         if (gameState.energy >= gameState.energyCost) {
-            let stakeBonus = 1 + (gameState.stakedAmount / 1000);
-            let effectiveGrowPower = gameState.growPower * stakeBonus;
-
+            // Tap Logic
+            const tapValue = gameState.growPower;
+            gameState.troBalance += tapValue;
             gameState.energy -= gameState.energyCost;
-            gameState.troBalance += effectiveGrowPower;
-            gameState.totalTaps++;
+            gameState.totalTaps += 1;
 
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
+            // Visual Feedback
+            createFloatingText(event.clientX, event.clientY, `+${tapValue.toFixed(1)}`);
 
-            let x = event.clientX || (event.touches?.[0]?.clientX ?? window.innerWidth / 2);
-            let y = event.clientY || (event.touches?.[0]?.clientY ?? window.innerHeight / 2);
-            showFloatingNumber(x, y, effectiveGrowPower);
-
-            taroPlant.style.transform = 'scale(0.9)';
-            setTimeout(() => { taroPlant.style.transform = 'scale(1)'; }, 100);
-
-            checkQuests();
             updateUI();
-            saveGameToFirebase();
+            checkQuests();
         } else {
-            showNotification("Not enough energy! ⚡️");
+            showNotification("Energy habis! Isi ulang atau tunggu.");
         }
     }
 
-    function showFloatingNumber(x, y, value) {
-        const el = document.createElement('div');
-        el.textContent = `+${value.toFixed(2)}`;
-        el.className = 'floating-number';
-        el.style.left = `${x}px`;
-        el.style.top = `${y}px`;
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
+    function createFloatingText(x, y, text) {
+        const floatText = document.createElement('div');
+        floatText.className = 'floating-text';
+        floatText.textContent = text;
+        floatText.style.left = `${x}px`;
+        floatText.style.top = `${y - 20}px`; 
+        tapArea.appendChild(floatText);
+
+        // Remove the element after animation
+        floatText.addEventListener('animationend', () => {
+            floatText.remove();
+        });
     }
 
     function rechargeEnergy() {
         if (gameState.energy < gameState.energyMax) {
-            gameState.energy += gameState.rechargeRate;
-            if (gameState.energy > gameState.energyMax) {
-                gameState.energy = gameState.energyMax;
-            }
+            const timeElapsed = (Date.now() - gameState.lastUpdate) / 1000; // dalam detik
+            const energyGained = timeElapsed * gameState.rechargeRate;
+
+            gameState.energy = Math.min(gameState.energyMax, gameState.energy + energyGained);
+            gameState.lastUpdate = Date.now();
             updateUI();
         }
     }
 
     function buyUpgrade(type) {
-        const upg = gameState.upgrades[type];
-        if (gameState.troBalance >= upg.cost) {
-            gameState.troBalance -= upg.cost;
-            upg.level++;
-            gameState.totalUpgrades++;
+        const upgrade = gameState.upgrades[type];
+        const cost = upgrade.cost;
+        
+        if (gameState.troBalance >= cost) {
+            gameState.troBalance -= cost;
+            upgrade.level += 1;
+            gameState.totalUpgrades += 1;
 
-            switch(type) {
-                case 'capacity': gameState.energyMax = Math.floor(100 * (1.2 ** (upg.level - 1))); break;
-                case 'power':    gameState.growPower = +(0.1 * (1.5 ** (upg.level - 1))).toFixed(2); break;
-                case 'speed':    gameState.rechargeRate = +(1 * (1.3 ** (upg.level - 1))).toFixed(2); break;
+            // Apply specific effect
+            if (type === 'power') {
+                gameState.growPower += 0.15; // Peningkatan Grow Power
+            } else if (type === 'capacity') {
+                gameState.energyMax += 50; // Peningkatan Max Energy
+                gameState.energy += 50; // Langsung tambahkan energy
+            } else if (type === 'speed') {
+                gameState.rechargeRate += 0.5; // Peningkatan Recharge Rate
             }
-            upg.cost = Math.floor(upg.cost * 2.5);
 
-            showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} Upgraded!`);
-            checkQuests();
+            // Calculate new cost (contoh: 1.5x dari biaya sebelumnya)
+            upgrade.cost = Math.ceil(cost * 1.5);
+
+            showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} Level ${upgrade.level} dibeli!`);
             updateUI();
-            saveGameToFirebase();
+            checkQuests();
         } else {
-            showNotification("Not enough TRO Coin!");
+            showNotification("TRO tidak cukup!");
         }
     }
 
     function stakeTokens() {
-        const amount = parseInt(stakeInput.value);
-        if (isNaN(amount) || amount <= 0) {
-            showNotification("Invalid amount");
-            return;
-        }
+        // Logika sederhana untuk Stake
+        const amount = 50; // Contoh: Stake 50 TRO
         if (gameState.troBalance >= amount) {
             gameState.troBalance -= amount;
             gameState.stakedAmount += amount;
-            stakeInput.value = '';
-            showNotification(`${amount} TRO Staked!`);
-            checkQuests();
+            showNotification(`Berhasil Stake ${amount} TRO!`);
             updateUI();
-            saveGameToFirebase();
+            checkQuests();
         } else {
-            showNotification("Not enough TRO to stake!");
+            showNotification("TRO tidak cukup untuk Stake 50!");
         }
     }
 
-    // --- UI & NOTIFICATION ---
+
+    // --- UI UPDATES ---\
     function updateUI() {
-        balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
-        energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
-        growPowerValue.textContent = gameState.growPower;
-        userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
-        energyBar.style.width = `${(gameState.energy / gameState.energyMax) * 100}%`;
+        balanceValue.textContent = formatNumber(gameState.troBalance);
+        
+        // Energy dibulatkan ke bawah
+        energyValue.textContent = `${formatNumber(Math.floor(gameState.energy))}/${gameState.energyMax}`; 
+        
+        // Update Stats Card
+        growPowerValue.textContent = `+${gameState.growPower.toFixed(2)}`;
+        rechargeRateValue.textContent = `+${gameState.rechargeRate.toFixed(1)}/s`;
+        energyMaxValue.textContent = gameState.energyMax;
+        stakedValue.textContent = formatNumber(gameState.stakedAmount);
 
-        capacityLevel.textContent = gameState.upgrades.capacity.level;
-        powerLevel.textContent = gameState.upgrades.power.level;
-        speedLevel.textContent = gameState.upgrades.speed.level;
-        capacityCost.textContent = gameState.upgrades.capacity.cost;
-        powerCost.textContent = gameState.upgrades.power.cost;
-        speedCost.textContent = gameState.upgrades.speed.cost;
-        stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
+        // Update Upgrade Cards
+        document.getElementById('power-level').textContent = gameState.upgrades.power.level;
+        document.getElementById('power-cost').textContent = formatNumber(gameState.upgrades.power.cost);
+        document.getElementById('capacity-level').textContent = gameState.upgrades.capacity.level;
+        document.getElementById('capacity-cost').textContent = formatNumber(gameState.upgrades.capacity.cost);
+        document.getElementById('speed-level').textContent = gameState.upgrades.speed.level;
+        document.getElementById('speed-cost').textContent = formatNumber(gameState.upgrades.speed.cost);
+        
+        // Update Quests UI (jika diperlukan)
+        // Di sini Anda dapat menambahkan logika untuk menampilkan kemajuan quest
     }
-
-    function showNotification(message) {
-        notification.textContent = message;
-        notification.classList.add('show');
-        setTimeout(() => notification.classList.remove('show'), 2000);
-    }
-
-    // --- TABS ---
+    
     function setupTabs() {
         const tabs = document.querySelectorAll('.tab');
-        const contents = document.querySelectorAll('.tab-content');
+        const tabContents = document.querySelectorAll('.tab-content');
+
         tabs.forEach(tab => {
-            addTapListener(tab, () => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-tab');
+
+                // Hapus active dari semua tab dan konten
                 tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Tambahkan active ke tab dan konten yang dipilih
                 tab.classList.add('active');
-                document.getElementById(`${tab.dataset.tab}-tab`)?.classList.add('active');
+                document.getElementById(`${targetTab}-tab`).classList.add('active');
             });
         });
     }
-
-    // --- QUESTS ---
+    
+    // --- QUEST & DATA MANAGEMENT ---
     function checkQuests() {
-        // ... (logika quest sama seperti sebelumnya - dipersingkat untuk efisiensi)
-        const questChecks = [
-            { key: 'tap100', value: gameState.totalTaps, el: 'quest-tap100' },
-            { key: 'upgrade3', value: gameState.totalUpgrades, el: 'quest-upgrade3' },
-            { key: 'stake50', value: gameState.stakedAmount, el: 'quest-stake50' }
-        ];
-
-        questChecks.forEach(({ key, value, el }) => {
-            if (!quests[key].completed) {
-                const progress = (value / quests[key].target) * 100;
-                document.getElementById(`${el}-progress`).style.width = `${Math.min(progress, 100)}%`;
-                if (value >= quests[key].target) {
-                    gameState.troBalance += quests[key].reward;
-                    quests[key].completed = true;
-                    showNotification(`Quest Complete! +${quests[key].reward} TRO`);
-                    document.getElementById(el).style.opacity = '0.5';
-                }
+        // Quest 1: Tap 100 kali
+        if (!quests.tap100.completed) {
+            if (gameState.totalTaps >= quests.tap100.target) {
+                gameState.troBalance += quests.tap100.reward;
+                quests.tap100.completed = true;
+                showNotification(`Quest Complete! +${quests.tap100.reward} TRO`);
+                document.getElementById('quest-tap100').style.opacity = '0.5';
             }
-        });
+        }
+
+        // Quest 2: Beli 3 upgrade
+        if (!quests.upgrade3.completed) {
+            if (gameState.totalUpgrades >= quests.upgrade3.target) {
+                gameState.troBalance += quests.upgrade3.reward;
+                quests.upgrade3.completed = true;
+                showNotification(`Quest Complete! +${quests.upgrade3.reward} TRO`);
+                document.getElementById('quest-upgrade3').style.opacity = '0.5';
+            }
+        }
+        
+        // Quest 3: Stake 50 TRO
+        if (!quests.stake50.completed) {
+            if (gameState.stakedAmount >= quests.stake50.target) {
+                gameState.troBalance += quests.stake50.reward;
+                quests.stake50.completed = true;
+                showNotification(`Quest Complete! +${quests.stake50.reward} TRO`);
+                document.getElementById('quest-stake50').style.opacity = '0.5';
+            }
+        }
     }
 
-    // --- FIREBASE & STORAGE ---
-    function saveGameToFirebase() {
-        if (!database && userId.startsWith('local_user')) {
-            localStorage.setItem('taroGameState', JSON.stringify(gameState));
-            localStorage.setItem('taroQuests', JSON.stringify(quests));
+
+    // --- FIREBASE DATA MANAGEMENT ---
+
+    function getUserId() {
+        // Menggunakan ID pengguna Telegram sebagai kunci database
+        // Hanya berfungsi jika diakses via Telegram WebApp
+        return tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
+    }
+
+    async function saveGame() {
+        const userId = getUserId();
+        if (userId) {
+            try {
+                // Hapus lastUpdate sementara agar tidak terjadi masalah timestamp (opsional)
+                const dataToSave = {...gameState, lastUpdate: Date.now()};
+                
+                await db.ref('users/' + userId).set({
+                    gameState: dataToSave,
+                    quests: quests
+                });
+                // console.log("Game saved to Firebase");
+            } catch (error) {
+                console.error("Failed to save game to Firebase:", error);
+            }
+        }
+    }
+
+    async function loadGame() {
+        const userId = getUserId();
+        if (userId) {
+            try {
+                const snapshot = await db.ref('users/' + userId).once('value');
+                const data = snapshot.val();
+                if (data) {
+                    // Update gameState dan quests
+                    gameState = data.gameState;
+                    quests = data.quests;
+                    
+                    // Hitung energi yang terisi saat load
+                    const now = Date.now();
+                    const timeElapsed = (now - gameState.lastUpdate) / 1000;
+                    const energyGained = timeElapsed * gameState.rechargeRate;
+                    gameState.energy = Math.min(gameState.energyMax, gameState.energy + energyGained);
+                    gameState.lastUpdate = now;
+
+                    console.log("Game loaded from Firebase");
+                    showNotification("Data game dimuat dari Cloud!");
+                }
+            } catch (error) {
+                console.error("Failed to load game from Firebase:", error);
+            }
+        } else {
+             // Jika tidak ada ID pengguna (misalnya, di luar Telegram)
+             console.warn("User ID not found. Using default or local state.");
+        }
+    }
+    
+    
+    // --- TONKEEPER (TON CONNECT) LOGIC ---
+    
+    let connector;
+
+    function initTonConnect() {
+        // URL manifest Anda yang sebenarnya (diperlukan Tonkeeper untuk terhubung)
+        const MANIFEST_URL = 'https://tarominer.com/tonconnect-manifest.json'; 
+
+        // Inisialisasi TonConnect
+        connector = new TonConnect.TonConnect({
+            manifestUrl: MANIFEST_URL,
+            storage: new TonConnect.TonConnect.BrowserStorage()
+        });
+
+        // Event listener untuk perubahan status koneksi
+        connector.onStatusChange(wallet => {
+            if (wallet) {
+                // Wallet terhubung
+                const address = TonConnect.TonConnect.toUserFriendlyAddress(wallet.account.address);
+                walletAddressDisplay.textContent = `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
+                connectBtn.textContent = 'Connected';
+                connectBtn.disabled = true;
+                showNotification(`Wallet Connected! ✅`);
+                // Di sini Anda bisa menyimpan alamat wallet jika diperlukan
+            } else {
+                // Wallet terputus
+                walletAddressDisplay.textContent = 'Not connected';
+                connectBtn.textContent = 'Connect';
+                connectBtn.disabled = false;
+            }
+        });
+        
+        // Cek koneksi yang sudah ada saat inisialisasi
+        connector.restoreConnection();
+    }
+
+    async function connectWallet() {
+        if (!connector) {
+            showNotification("TonConnect is not initialized.");
             return;
         }
 
-        if (database) {
-            const userRef = database.ref(`users/${userId}`);
-            userRef.update({
-                gameState,
-                quests,
-                walletAddress: userWalletAddress,
-                lastActive: firebase.database.ServerValue.TIMESTAMP
-            }).catch(err => console.error("Save error:", err));
-        }
-    }
+        try {
+            // Dapatkan daftar wallet yang tersedia untuk koneksi (Tonkeeper, TonSpace, dll.)
+            const wallets = await connector.getWallets();
+            
+            // Coba koneksi ke wallet pertama (atau bisa tampilkan daftar pilihan)
+            if (wallets && wallets.length > 0) {
+                const tonkeeperWallet = wallets.find(w => w.appName.toLowerCase().includes('tonkeeper'));
 
-    function loadGameFromFirebase() {
-        return new Promise((resolve) => {
-            if (!database && userId.startsWith('local_user')) {
-                const savedState = localStorage.getItem('taroGameState');
-                const savedQuests = localStorage.getItem('taroQuests');
-                if (savedState) try { gameState = JSON.parse(savedState); } catch (e) {}
-                if (savedQuests) try { quests = JSON.parse(savedQuests); } catch (e) {}
-                resolve();
-                return;
-            }
-
-            if (database) {
-                database.ref(`users/${userId}`).once('value')
-                    .then(snapshot => {
-                        const data = snapshot.val();
-                        if (data?.gameState) {
-                            gameState = data.gameState;
-                            quests = data.quests || defaultQuests;
-                            if (data.walletAddress) {
-                                userWalletAddress = data.walletAddress;
-                                walletAddressEl.textContent = `Connected: ${userWalletAddress.substring(0, 6)}...${userWalletAddress.substring(userWalletAddress.length - 4)}`;
-                            }
-                        }
-                        resolve();
-                    })
-                    .catch(err => {
-                        console.error("Load error:", err);
-                        resolve();
-                    });
+                if (tonkeeperWallet) {
+                    // Gunakan metode 'tonkeeper' untuk koneksi langsung via WebApp
+                    const connectionRequest = {
+                        universalLink: tonkeeperWallet.universalLink,
+                        bridgeUrl: tonkeeperWallet.bridgeUrl,
+                    };
+                    
+                    // Memulai koneksi
+                    connector.connect(connectionRequest);
+                } else {
+                     showNotification("Tonkeeper wallet not found in list. Using universal connect.");
+                     // Alternatif: Gunakan universal link untuk QR atau deep link
+                     const universalLink = connector.connect(wallets[0]).universalLink;
+                     showNotification(`Connect using this link: ${universalLink}`);
+                }
             } else {
-                resolve();
+                 showNotification("No Ton wallets found/installed.");
             }
-        });
-    }
 
-    // --- INIT GAME ---
-    async function initGame() {
-        console.log("🌱 TARO Tap Miner + Firebase + TON Initialized");
-        await loadGameFromFirebase();
-
-        // Tambahkan tombol Withdraw (jika TON tersedia)
-        if (tonConnectUI) {
-            const withdrawBtn = document.createElement('button');
-            withdrawBtn.textContent = 'Withdraw TRO';
-            withdrawBtn.className = 'stake-btn';
-            withdrawBtn.style.marginTop = '10px';
-            stakeBtn.parentNode.appendChild(withdrawBtn);
-            addTapListener(withdrawBtn, withdrawTRO);
+        } catch (error) {
+            console.error("TonConnect Error:", error);
+            showNotification("Failed to connect wallet.");
         }
+    }
+    
+    // --- INITIALIZATION ---
+    async function initGame() { 
+        console.log("🌱 TARO Tap Miner Initializing...");
+        
+        initTonConnect(); // Inisialisasi TonConnect
 
-        // Event listeners
-        addTapListener(tapArea, handleTap);
+        // Tunggu loadGame selesai dari Firebase
+        await loadGame();
+        
+        // Setup Event Listeners
+        tapArea.addEventListener('click', handleTap);
         document.querySelectorAll('.upgrade-card').forEach(card => {
-            addTapListener(card, () => buyUpgrade(card.dataset.upgrade));
+            card.addEventListener('click', () => {
+                buyUpgrade(card.getAttribute('data-upgrade'));
+            });
         });
-        addTapListener(stakeBtn, stakeTokens);
+        document.getElementById('stake-btn').addEventListener('click', stakeTokens);
+        document.getElementById('connect-btn').addEventListener('click', connectWallet); // Listener Tonkeeper
+        
         setupTabs();
-
         updateUI();
         checkQuests();
 
-        setInterval(rechargeEnergy, 1000);
-        setInterval(saveGameToFirebase, 10000);
+        // Game Loop & Auto-save
+        setInterval(rechargeEnergy, 1000); // 1 detik
+        setInterval(saveGame, 10000); // Auto-save setiap 10 detik
     }
-
+    
     initGame();
 });
