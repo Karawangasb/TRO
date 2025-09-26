@@ -49,6 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const powerLevel = document.getElementById('power-level');
     const speedLevel = document.getElementById('speed-level');
 
+    const capacityCost = document.getElementById('capacity-cost');
+    const powerCost = document.getElementById('power-cost');
+    const speedCost = document.getElementById('speed-cost');
+
     const stakeBtn = document.getElementById('stake-btn');
     const stakeInput = document.getElementById('stake-input');
     const stakedAmountDisplay = document.getElementById('staked-amount');
@@ -177,21 +181,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- UI FUNCTIONS ---
-    function updateUI() {
-        balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
-        energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
-        growPowerValue.textContent = gameState.growPower;
-        userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
+function updateUI() {
+    balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
+    energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
+    growPowerValue.textContent = gameState.growPower;
+    userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
 
-        const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
-        energyBar.style.width = `${energyPercentage}%`;
+    const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
+    energyBar.style.width = `${energyPercentage}%`;
 
-        capacityLevel.textContent = gameState.upgrades.capacity.level;
-        powerLevel.textContent = gameState.upgrades.power.level;
-        speedLevel.textContent = gameState.upgrades.speed.level;
+    capacityLevel.textContent = gameState.upgrades.capacity.level;
+    powerLevel.textContent = gameState.upgrades.power.level;
+    speedLevel.textContent = gameState.upgrades.speed.level;
 
-        stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
-    }
+    // ini untuk menampilkan harga
+    capacityCost.textContent = gameState.upgrades.capacity.cost;
+    powerCost.textContent = gameState.upgrades.power.cost;
+    speedCost.textContent = gameState.upgrades.speed.cost;
+
+    stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
+}
 
     function showNotification(message) {
         notification.textContent = message;
