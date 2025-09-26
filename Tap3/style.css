@@ -280,24 +280,32 @@ body {
     color: #ffd54f;
     margin-right: 10px;
 }
-.leaderboard-item.highlight {
-  background: rgba(255, 215, 0, 0.25);
-  border: 1px solid gold;
-  border-radius: 8px;
-}
-.floating-text {
-  position: absolute;
-  animation: floatUp 1s ease-out forwards;
-  color: gold;
+.leaderboard-item.current-user {
+  background: rgba(50, 200, 100, 0.15);
+  border-left: 3px solid #4CAF50;
   font-weight: bold;
-  pointer-events: none;
-}
-@keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-30px); }
 }
 
+.current-user-rank {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #444;
+  text-align: center;
+  color: #ffd700;
+}
+.leaderboard-item.current-user {
+  background: rgba(50, 200, 100, 0.15);
+  border-left: 3px solid #4CAF50;
+  font-weight: bold;
+}
 
+.current-user-rank {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #444;
+  text-align: center;
+  color: #ffd700;
+}
 /* -------------------------------- */
 /* --- MENU NAVIGASI BAWAH (BARU) --- */
 /* -------------------------------- */
