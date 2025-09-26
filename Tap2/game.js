@@ -1,7 +1,11 @@
 // ================================= //
 // --- TARO TAP MINER - GAME.JS --- //
 // ================================= //
+// --- Firebase Imports (v10.7.1 modular) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// --- Konfigurasi Firebase ---
 const firebaseConfig = {
   apiKey: "AIzaSyDOFgwhenY_asKM32mgG_n8_d1rAnMKny0",
   authDomain: "taro-9b8c5.firebaseapp.com",
@@ -12,8 +16,10 @@ const firebaseConfig = {
   appId: "1:856610794983:web:49c9eab3d62af46f5da142"
 };
 
+// --- Inisialisasi Firebase ---
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // --- INISIALISASI GAME ---
