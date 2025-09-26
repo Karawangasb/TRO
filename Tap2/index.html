@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    </head>
+</head>
 <body>
 
     <div class="container">
@@ -27,6 +27,7 @@
 
         <div class="main-content">
 
+            <!-- HOME TAB -->
             <div class="tab-content active" id="home-tab">
                 <div class="stats-container">
                     <div class="stat-card">
@@ -55,43 +56,45 @@
                 </div>
             </div>
 
-<div class="tab-content" id="upgrades-tab">
-    <div class="section-title">
-        <i class="fas fa-rocket"></i>
-        <h2>Boosters</h2>
-    </div>
-    <div class="upgrade-card" data-upgrade="capacity">
-        <div>
-            <h3>Energy Capacity</h3>
-            <p>Increase max energy limit</p>
-        </div>
-        <div>
-            <div>Level <span id="capacity-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="capacity-cost">5</span> TRO</div>
-        </div>
-    </div>
-    <div class="upgrade-card" data-upgrade="power">
-        <div>
-            <h3>Grow Power</h3>
-            <p>Increase TRO per tap</p>
-        </div>
-        <div>
-            <div>Level <span id="power-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="power-cost">5</span> TRO</div>
-        </div>
-    </div>
-    <div class="upgrade-card" data-upgrade="speed">
-        <div>
-            <h3>Recharge Speed</h3>
-            <p>Increase energy recharge rate</p>
-        </div>
-        <div>
-            <div>Level <span id="speed-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="speed-cost">7</span> TRO</div>
-        </div>
-    </div>
-                                                   </div>
+            <!-- UPGRADES TAB -->
+            <div class="tab-content" id="upgrades-tab">
+                <div class="section-title">
+                    <i class="fas fa-rocket"></i>
+                    <h2>Boosters</h2>
+                </div>
+                <div class="upgrade-card" data-upgrade="capacity">
+                    <div>
+                        <h3>Energy Capacity</h3>
+                        <p>Increase max energy limit</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="capacity-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="capacity-cost">5</span> TRO</div>
+                    </div>
+                </div>
+                <div class="upgrade-card" data-upgrade="power">
+                    <div>
+                        <h3>Grow Power</h3>
+                        <p>Increase TRO per tap</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="power-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="power-cost">5</span> TRO</div>
+                    </div>
+                </div>
+                <div class="upgrade-card" data-upgrade="speed">
+                    <div>
+                        <h3>Recharge Speed</h3>
+                        <p>Increase energy recharge rate</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="speed-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="speed-cost">7</span> TRO</div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- STAKING TAB -->
             <div class="tab-content" id="staking-tab">
                 <div class="section-title">
                     <i class="fas fa-piggy-bank"></i>
@@ -110,8 +113,9 @@
                 </div>
             </div>
 
+            <!-- QUESTS TAB -->
             <div class="tab-content" id="quests-tab">
-                 <div class="section-title">
+                <div class="section-title">
                     <i class="fas fa-tasks"></i>
                     <h2>Daily Quests</h2>
                 </div>
@@ -124,15 +128,15 @@
                     <div>Reward: 10 TRO</div>
                 </div>
                 <div class="quest-card" id="quest-upgrade3">
-                     <div>
+                    <div>
                         <h3>Growth Spurt</h3>
                         <p>Upgrade 3 times</p>
                         <div class="quest-progress"><div class="quest-progress-bar" id="quest-upgrade3-progress"></div></div>
                     </div>
                     <div>Reward: 25 TRO</div>
                 </div>
-                 <div class="quest-card" id="quest-stake50">
-                     <div>
+                <div class="quest-card" id="quest-stake50">
+                    <div>
                         <h3>Investor</h3>
                         <p>Stake 50 TRO</p>
                         <div class="quest-progress"><div class="quest-progress-bar" id="quest-stake50-progress"></div></div>
@@ -141,32 +145,20 @@
                 </div>
             </div>
 
+            <!-- LEADERBOARD TAB (DINAMIS) -->
             <div class="tab-content" id="leaderboard-tab">
                 <div class="section-title">
                     <i class="fas fa-trophy"></i>
                     <h2>Leaderboard</h2>
                 </div>
-                <div class="leaderboard-item">
-                    <div><span class="leaderboard-rank">1.</span> TaroMaster</div>
-                    <div>1,245 TRO</div>
+                <div class="leaderboard-list">
+                    <!-- Top 10 players will be inserted here by JavaScript -->
                 </div>
-                <div class="leaderboard-item">
-                    <div><span class="leaderboard-rank">2.</span> GreenThumb</div>
-                    <div>987 TRO</div>
-                </div>
-                <div class="leaderboard-item">
-                    <div><span class="leaderboard-rank">3.</span> HarvestKing</div>
-                    <div>756 TRO</div>
-                </div>
-                <div class="leaderboard-item">
-                    <div><span class="leaderboard-rank">4.</span> TaroFarmer</div>
-                    <div>632 TRO</div>
-                </div>
-                <div class="leaderboard-item">
-                    <div><span class="leaderboard-rank">5.</span> You</div>
-                    <div id="user-rank">0 TRO</div>
+                <div class="current-user-rank">
+                    Your Rank: <span id="user-rank">Loading...</span>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -194,6 +186,6 @@
             <span>Top</span>
         </div>
     </div>
-   <script type="module" src="game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html>
