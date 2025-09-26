@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkQuests();
 
         // Mulai interval recharge energi (setiap detik)
-        setInterval(rechargeEnergy, 1000);
+        setInterval(rechargeEnergy, 100);
         
         // Simpan game secara berkala (setiap 10 detik)
         setInterval(saveGame, 10000);
