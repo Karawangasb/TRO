@@ -7,7 +7,73 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    </head>
+    <style>
+        /* Floating Number Animation */
+        .floating-number {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #ffd700;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        @keyframes floatUp {
+            to { transform: translateY(-80px); opacity: 0; }
+        }
+
+        /* Leaderboard Styling */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        .leaderboard-item.current-user {
+            background: rgba(76, 175, 80, 0.15);
+            border-left: 3px solid #4CAF50;
+            font-weight: bold;
+        }
+        .leaderboard-rank {
+            font-weight: bold;
+            color: #ffd700;
+            margin-right: 8px;
+        }
+        .current-user-rank {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid #444;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
 <body>
 
     <div class="container">
@@ -27,6 +93,7 @@
 
         <div class="main-content">
 
+            <!-- HOME TAB -->
             <div class="tab-content active" id="home-tab">
                 <div class="stats-container">
                     <div class="stat-card">
@@ -55,43 +122,45 @@
                 </div>
             </div>
 
-<div class="tab-content" id="upgrades-tab">
-    <div class="section-title">
-        <i class="fas fa-rocket"></i>
-        <h2>Boosters</h2>
-    </div>
-    <div class="upgrade-card" data-upgrade="capacity">
-        <div>
-            <h3>Energy Capacity</h3>
-            <p>Increase max energy limit</p>
-        </div>
-        <div>
-            <div>Level <span id="capacity-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="capacity-cost">5</span> TRO</div>
-        </div>
-    </div>
-    <div class="upgrade-card" data-upgrade="power">
-        <div>
-            <h3>Grow Power</h3>
-            <p>Increase TRO per tap</p>
-        </div>
-        <div>
-            <div>Level <span id="power-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="power-cost">5</span> TRO</div>
-        </div>
-    </div>
-    <div class="upgrade-card" data-upgrade="speed">
-        <div>
-            <h3>Recharge Speed</h3>
-            <p>Increase energy recharge rate</p>
-        </div>
-        <div>
-            <div>Level <span id="speed-level">1</span></div>
-            <div class="upgrade-cost">Cost: <span id="speed-cost">7</span> TRO</div>
-        </div>
-    </div>
-                                                   </div>
+            <!-- UPGRADES TAB -->
+            <div class="tab-content" id="upgrades-tab">
+                <div class="section-title">
+                    <i class="fas fa-rocket"></i>
+                    <h2>Boosters</h2>
+                </div>
+                <div class="upgrade-card" data-upgrade="capacity">
+                    <div>
+                        <h3>Energy Capacity</h3>
+                        <p>Increase max energy limit</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="capacity-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="capacity-cost">5</span> TRO</div>
+                    </div>
+                </div>
+                <div class="upgrade-card" data-upgrade="power">
+                    <div>
+                        <h3>Grow Power</h3>
+                        <p>Increase TRO per tap</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="power-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="power-cost">5</span> TRO</div>
+                    </div>
+                </div>
+                <div class="upgrade-card" data-upgrade="speed">
+                    <div>
+                        <h3>Recharge Speed</h3>
+                        <p>Increase energy recharge rate</p>
+                    </div>
+                    <div>
+                        <div>Level <span id="speed-level">1</span></div>
+                        <div class="upgrade-cost">Cost: <span id="speed-cost">7</span> TRO</div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- STAKING TAB -->
             <div class="tab-content" id="staking-tab">
                 <div class="section-title">
                     <i class="fas fa-piggy-bank"></i>
@@ -110,8 +179,9 @@
                 </div>
             </div>
 
+            <!-- QUESTS TAB -->
             <div class="tab-content" id="quests-tab">
-                 <div class="section-title">
+                <div class="section-title">
                     <i class="fas fa-tasks"></i>
                     <h2>Daily Quests</h2>
                 </div>
@@ -124,15 +194,15 @@
                     <div>Reward: 10 TRO</div>
                 </div>
                 <div class="quest-card" id="quest-upgrade3">
-                     <div>
+                    <div>
                         <h3>Growth Spurt</h3>
                         <p>Upgrade 3 times</p>
                         <div class="quest-progress"><div class="quest-progress-bar" id="quest-upgrade3-progress"></div></div>
                     </div>
                     <div>Reward: 25 TRO</div>
                 </div>
-                 <div class="quest-card" id="quest-stake50">
-                     <div>
+                <div class="quest-card" id="quest-stake50">
+                    <div>
                         <h3>Investor</h3>
                         <p>Stake 50 TRO</p>
                         <div class="quest-progress"><div class="quest-progress-bar" id="quest-stake50-progress"></div></div>
@@ -140,19 +210,22 @@
                     <div>Reward: 5 TRO</div>
                 </div>
             </div>
-         <div class="tab-content" id="leaderboard-tab">
-            <div class="section-title">
-               <i class="fas fa-trophy"></i>
-               <h2>Leaderboard</h2>
-             </div>
-      <div class="leaderboard-list">
-         <!-- Top 10 akan muncul di sini -->
-         </div>
-            <div class="current-user-rank">
-           Your Rank: <span id="user-rank">Loading...</span>
+
+            <!-- LEADERBOARD TAB (DINAMIS) -->
+            <div class="tab-content" id="leaderboard-tab">
+                <div class="section-title">
+                    <i class="fas fa-trophy"></i>
+                    <h2>Leaderboard</h2>
+                </div>
+                <div class="leaderboard-list">
+                    <!-- Top 10 players will be inserted here by JavaScript -->
+                </div>
+                <div class="current-user-rank">
+                    Your Rank: <span id="user-rank">Loading...</span>
+                </div>
             </div>
-       </div>
-     </div>
+
+        </div>
     </div>
 
     <div class="notification" id="notification"></div>
@@ -179,6 +252,7 @@
             <span>Top</span>
         </div>
     </div>
-   <script type="module" src="game.js"></script>
+
+    <script type="module" src="game.js"></script>
 </body>
 </html>
