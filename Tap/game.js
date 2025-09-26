@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
         troBalance: 0,
         energy: 100,
         energyMax: 100,
-        growPower: 1,      // Poin per tap
+        growPower: 0.1,      // Poin per tap
+        energyCost: 1,     // energy dipakai setiap tap
         rechargeRate: 1,   // Energi per detik
         upgrades: {
             capacity: { level: 1, cost: 50 },
@@ -66,9 +67,9 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {MouseEvent} event - Event dari klik mouse atau sentuhan
      */
     function handleTap(event) {
-        if (gameState.energy >= gameState.growPower) {
+        if (gameState.energy >= gameState.energyCost) {
             // Kurangi energi, tambahkan balance
-            gameState.energy -= gameState.growPower;
+            gameState.energy -= gameState.energyCost;
             gameState.troBalance += gameState.growPower;
             gameState.totalTaps++;
 
