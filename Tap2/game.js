@@ -5,7 +5,7 @@
 // --- Firebase Imports (v10.7.1 modular) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getFirestore, doc, setDoc, getDoc, updateDoc,
+  getFirestore, doc, setDoc, getDoc,
   collection, getDocs, query, orderBy, where, limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -24,11 +24,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 document.addEventListener("DOMContentLoaded", () => {
-  // --- Telegram Init ---
-  const tg = window.Telegram.WebApp;
-  tg.expand();
-  const userId = tg.initDataUnsafe?.user?.id?.toString() || "guest_" + Math.floor(Math.random() * 1000000);
-  const userName = tg.initDataUnsafe?.user?.first_name || "Player" + userId.slice(-4);
+  // --- Telegram Init (aman untuk non-Telegram) ---
+  const tg = window.Telegram?.WebApp;
+  if (tg) tg.expand();
+  const userId = tg?.initDataUnsafe?.user?.id?.toString() || "guest_" + Math.floor(Math.random() * 1000000);
+  const userName = tg?.initDataUnsafe?.user?.first_name || "Player" + userId.slice(-4);
 
   console.log("👤 UserID:", userId, "| Name:", userName);
 
@@ -46,10 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
       speed: { level: 1, cost: 7 }
     },
     stakedAmount: 0,
+    lastStakeUpdate: Date.now(), // <-- penting untuk hitung reward
     lastUpdate: Date.now(),
     totalTaps: 0,
     totalUpgrades: 0,
-    name: userName // <-- tambahkan nama
+    name: userName
   };
 
   // --- QUEST SYSTEM DEFAULT ---
@@ -78,8 +79,72 @@ document.addEventListener("DOMContentLoaded", () => {
   const speedCost = document.getElementById("speed-cost");
 
   const stakeBtn = document.getElementById("stake-btn");
+  const unstakeBtn = document.getElementById("unstake-btn"); // <-- baru
   const stakeInput = document.getElementById("stake-input");
   const stakedAmountDisplay = document.getElementById("staked-amount");
+  const rewardEstimateEl = document.getElementById("reward-estimate"); // <-- baru
+
+  // ========================
+  // --- STAKING LOGIC ---
+  // ========================
+
+  // Hitung reward berdasarkan waktu & jumlah staked
+  function calculateStakingRewards() {
+    if (gameState.stakedAmount <= 0) return 0;
+
+    const now = Date.now();
+    const elapsedSeconds = (now - gameState.lastStakeUpdate) / 1000;
+    
+    // Reward rate: 0.1% per menit = ~0.00167% per detik
+    // Untuk gameplay, kita gunakan: 0.001 per detik (0.1% per detik → disesuaikan agar terasa)
+    // Artinya: 100 TRO staked = 0.1 TRO/detik → terlalu tinggi!
+    // Lebih realistis: 100 TRO = 0.01 TRO per 10 detik → rate = 0.00001 per detik
+    const rewardRatePerSecond = 0.00001; // sesuaikan sesuai kebutuhan ekonomi
+
+    const rewards = gameState.stakedAmount * rewardRatePerSecond * elapsedSeconds;
+
+    if (rewards >= 0.01) {
+      gameState.troBalance += rewards;
+      gameState.lastStakeUpdate = now;
+      return rewards;
+    }
+    return 0;
+  }
+
+  function stakeTokens() {
+    const amount = parseFloat(stakeInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      showNotification("Enter a valid amount!");
+      return;
+    }
+    if (gameState.troBalance < amount) {
+      showNotification("Not enough TRO to stake!");
+      return;
+    }
+
+    gameState.troBalance -= amount;
+    gameState.stakedAmount += amount;
+    stakeInput.value = "";
+    showNotification(`${amount.toFixed(2)} TRO Staked!`);
+    checkQuests();
+    updateUI();
+  }
+
+  function unstakeTokens() {
+    if (gameState.stakedAmount <= 0) {
+      showNotification("No TRO to unstake!");
+      return;
+    }
+
+    // Ambil reward terakhir sebelum unstake
+    calculateStakingRewards();
+
+    gameState.troBalance += gameState.stakedAmount;
+    gameState.stakedAmount = 0;
+    gameState.lastStakeUpdate = Date.now();
+    showNotification("All TRO unstaked!");
+    updateUI();
+  }
 
   // ========================
   // --- CORE GAME LOGIC ---
@@ -176,33 +241,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function stakeTokens() {
-    const amount = parseInt(stakeInput.value);
-    if (isNaN(amount) || amount <= 0) {
-      showNotification("Invalid amount");
-      return;
-    }
-    if (gameState.troBalance >= amount) {
-      gameState.troBalance -= amount;
-      gameState.stakedAmount += amount;
-      stakeInput.value = "";
-      showNotification(`${amount} TRO Staked!`);
-      checkQuests();
-      updateUI();
-    } else {
-      showNotification("Not enough TRO to stake!");
-    }
-  }
-
   // ========================
   // --- UI FUNCTIONS ---
   // ========================
 
   function updateUI() {
     balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
+    const balanceValueStake = document.getElementById("balance-value-stake");
+if (balanceValueStake) {
+  balanceValueStake.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
+}
     energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
     growPowerValue.textContent = gameState.growPower;
-    userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
 
     const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
     energyBar.style.width = `${energyPercentage}%`;
@@ -216,6 +266,14 @@ document.addEventListener("DOMContentLoaded", () => {
     speedCost.textContent = gameState.upgrades.speed.cost;
 
     stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
+
+    // Update estimasi reward (TRO per menit)
+    const rewardPerMinute = (gameState.stakedAmount * 0.00001 * 60).toFixed(2);
+    if (rewardEstimateEl) {
+      rewardEstimateEl.textContent = rewardPerMinute;
+    }
+
+    // Jangan update rank di sini (terlalu sering), cukup saat leaderboard refresh
   }
 
   function showNotification(message) {
@@ -342,13 +400,12 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       leaderboardList.appendChild(item);
     });
-
-    updateUserRank();
   }
 
   async function loadAndRenderLeaderboard() {
     const topPlayers = await fetchLeaderboard();
     renderLeaderboard(topPlayers);
+    updateUserRank(); // update rank sekali per refresh
   }
 
   // ========================
@@ -358,7 +415,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function saveGame() {
     try {
       const gameStateRef = doc(db, "users", userId);
-      await setDoc(gameStateRef, { ...gameState, quests }, { merge: true });
+      await setDoc(gameStateRef, { 
+        ...gameState, 
+        quests,
+        lastStakeUpdate: gameState.lastStakeUpdate
+      }, { merge: true });
       console.log("💾 Game saved");
     } catch (err) {
       console.error("❌ Save error:", err);
@@ -371,12 +432,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const snap = await getDoc(gameStateRef);
       if (snap.exists()) {
         const data = snap.data();
-        gameState = { ...gameState, ...data };
+        gameState = { 
+          ...gameState, 
+          ...data,
+          lastStakeUpdate: data.lastStakeUpdate || Date.now()
+        };
         quests = { ...quests, ...data.quests };
         console.log("📥 Game loaded:", data);
       } else {
-        // Simpan nama saat pertama kali
-        await setDoc(gameStateRef, { ...gameState, quests });
+        await setDoc(gameStateRef, { 
+          ...gameState, 
+          quests,
+          lastStakeUpdate: gameState.lastStakeUpdate
+        });
         console.log("🆕 New game created");
       }
     } catch (err) {
@@ -397,6 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.addEventListener("click", () => buyUpgrade(card.getAttribute("data-upgrade")));
     });
     stakeBtn.addEventListener("click", stakeTokens);
+    unstakeBtn?.addEventListener("click", unstakeTokens); // aman jika tidak ada
 
     setupTabs();
     updateUI();
@@ -404,9 +473,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Leaderboard
     loadAndRenderLeaderboard();
-    setInterval(loadAndRenderLeaderboard, 30000); // refresh tiap 30 detik
+    setInterval(loadAndRenderLeaderboard, 30000);
 
+    // Energy recharge
     setInterval(rechargeEnergy, 1000);
+
+    // Staking reward (setiap 10 detik)
+    setInterval(() => {
+      if (gameState.stakedAmount > 0) {
+        const reward = calculateStakingRewards();
+        if (reward > 0) {
+          updateUI();
+        }
+      }
+    }, 10000);
+
+    // Auto-save
     setInterval(saveGame, 10000);
   }
 
