@@ -280,6 +280,22 @@ body {
     color: #ffd54f;
     margin-right: 10px;
 }
+.leaderboard-item.highlight {
+  background: rgba(255, 215, 0, 0.25);
+  border: 1px solid gold;
+  border-radius: 8px;
+}
+.floating-text {
+  position: absolute;
+  animation: floatUp 1s ease-out forwards;
+  color: gold;
+  font-weight: bold;
+  pointer-events: none;
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
 
 
 /* -------------------------------- */
