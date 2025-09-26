@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         troBalance: 0,
         energy: 1000,
         energyMax: 1000,
-        growPower: 0.01,      // Poin per tap
+        growPower: 1,      // Poin per tap
         rechargeRate: 1,   // Energi per detik
         upgrades: {
             capacity: { level: 1, cost: 50 },
