@@ -158,6 +158,13 @@ body {
     transition: transform 0.1s ease;
 }
 
+.upgrade-cost {
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: bold;
+    margin-top: 4px;
+    }
+
 .tap-area:active .plant-evolution {
     transform: scale(0.9);
 }
