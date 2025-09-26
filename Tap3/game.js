@@ -6,7 +6,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc,
-  collection, getDocs, query, orderBy, where
+  collection, getDocs, query, orderBy, where, limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Konfigurasi Firebase ---
