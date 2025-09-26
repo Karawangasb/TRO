@@ -4,23 +4,19 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // --- INISIALISASI GAME ---
-    // Mencegah gerakan scroll atau zoom yang tidak diinginkan di mobile
     document.body.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-    
-    // Inisialisasi Telegram Web App
+
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Memastikan aplikasi terbuka penuh
+    tg.expand();
 
     // --- GAME STATE ---
-    // Objek utama untuk menyimpan semua data game.
-    // Akan dimuat dari localStorage jika ada.
     let gameState = {
         troBalance: 0,
         energy: 100,
         energyMax: 100,
         growPower: 0.1,      // Poin per tap
-        energyCost: 1,     // energy dipakai setiap tap
-        rechargeRate: 1,   // Energi per detik
+        energyCost: 1,
+        rechargeRate: 1,
         upgrades: {
             capacity: { level: 1, cost: 50 },
             power:    { level: 1, cost: 50 },
@@ -40,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // --- DOM ELEMENTS ---
-    // Mengambil semua elemen dari HTML untuk dimanipulasi
     const balanceValue = document.getElementById('balance-value');
     const energyValue = document.getElementById('energy-value');
     const growPowerValue = document.getElementById('grow-power-value');
@@ -50,42 +45,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const notification = document.getElementById('notification');
     const userRank = document.getElementById('user-rank');
 
-    // Upgrade Levels
     const capacityLevel = document.getElementById('capacity-level');
     const powerLevel = document.getElementById('power-level');
     const speedLevel = document.getElementById('speed-level');
 
-    // Staking
     const stakeBtn = document.getElementById('stake-btn');
     const stakeInput = document.getElementById('stake-input');
     const stakedAmountDisplay = document.getElementById('staked-amount');
 
     // --- CORE GAME LOGIC ---
 
-    /**
-     * Fungsi utama yang dijalankan setiap kali area taro di-tap.
-     * @param {MouseEvent} event - Event dari klik mouse atau sentuhan
-     */
     function handleTap(event) {
         if (gameState.energy >= gameState.energyCost) {
-            // Kurangi energi, tambahkan balance
+            // Hitung staking bonus
+            let stakeBonus = 1 + (gameState.stakedAmount / 1000);
+            let effectiveGrowPower = gameState.growPower * stakeBonus;
+
+            // Kurangi energi, tambah balance
             gameState.energy -= gameState.energyCost;
-            gameState.troBalance += gameState.growPower;
+            gameState.troBalance += effectiveGrowPower;
             gameState.totalTaps++;
 
-            // Beri getaran (haptic feedback) jika didukung
+            // Haptic feedback
             if (tg && tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
-            
-            // Tampilkan angka yang melayang di lokasi tap
-            showFloatingNumber(event.clientX, event.clientY);
 
-            // Animasi pada tanaman
+            // Floating number
+            showFloatingNumber(event.clientX, event.clientY, effectiveGrowPower);
+
+            // Animasi tanaman
             taroPlant.style.transform = 'scale(0.9)';
             setTimeout(() => { taroPlant.style.transform = 'scale(1)'; }, 100);
 
-            // Cek quest setelah tap
             checkQuests();
             updateUI();
         } else {
@@ -93,24 +85,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Menampilkan angka poin yang didapat di lokasi tap.
-     * @param {number} x - Posisi horizontal
-     * @param {number} y - Posisi vertikal
-     */
-    function showFloatingNumber(x, y) {
+    function showFloatingNumber(x, y, value) {
         const floatingNumber = document.createElement('div');
-        floatingNumber.textContent = `+${gameState.growPower}`;
+        floatingNumber.textContent = `+${value.toFixed(2)}`;
         floatingNumber.className = 'floating-number';
         floatingNumber.style.left = `${x}px`;
         floatingNumber.style.top = `${y}px`;
         document.body.appendChild(floatingNumber);
 
-        // Hapus elemen setelah animasi selesai
         setTimeout(() => {
             floatingNumber.remove();
         }, 1000);
     }
+
     // Tambahkan CSS untuk floating-number
     const style = document.createElement('style');
     style.innerHTML = `
@@ -132,10 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }`;
     document.head.appendChild(style);
 
-
-    /**
-     * Mengisi ulang energi setiap detik.
-     */
     function rechargeEnergy() {
         if (gameState.energy < gameState.energyMax) {
             gameState.energy += gameState.rechargeRate;
@@ -145,32 +128,26 @@ document.addEventListener('DOMContentLoaded', function() {
             updateUI();
         }
     }
-    
-    /**
-     * Memproses pembelian upgrade.
-     * @param {string} type - Tipe upgrade ('capacity', 'power', 'speed')
-     */
+
     function buyUpgrade(type) {
         const upgrade = gameState.upgrades[type];
         if (gameState.troBalance >= upgrade.cost) {
             gameState.troBalance -= upgrade.cost;
             upgrade.level++;
             gameState.totalUpgrades++;
-            
-            // Terapkan efek upgrade
+
             switch(type) {
                 case 'capacity':
-                    gameState.energyMax = 100 + (upgrade.level - 1) * 20;
+                    gameState.energyMax = Math.floor(100 * (1.2 ** (upgrade.level - 1)));
                     break;
                 case 'power':
-                    gameState.growPower = 0.1 + (upgrade.level - 1);
+                    gameState.growPower = +(0.1 * (1.5 ** (upgrade.level - 1))).toFixed(2);
                     break;
                 case 'speed':
-                    gameState.rechargeRate = 1 + (upgrade.level - 1);
+                    gameState.rechargeRate = +(1 * (1.3 ** (upgrade.level - 1))).toFixed(2);
                     break;
             }
-            
-            // Naikkan biaya untuk level selanjutnya
+
             upgrade.cost = Math.floor(upgrade.cost * 2.5);
 
             showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} Upgraded!`);
@@ -181,9 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Memproses staking token.
-     */
     function stakeTokens() {
         const amount = parseInt(stakeInput.value);
         if (isNaN(amount) || amount <= 0) {
@@ -202,35 +176,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
     // --- UI FUNCTIONS ---
-
-    /**
-     * Memperbarui semua elemen UI dengan data dari gameState.
-     */
     function updateUI() {
         balanceValue.textContent = Math.floor(gameState.troBalance).toLocaleString();
         energyValue.textContent = `${Math.floor(gameState.energy)}/${gameState.energyMax}`;
         growPowerValue.textContent = gameState.growPower;
         userRank.textContent = `${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
 
-        // Update energy bar
         const energyPercentage = (gameState.energy / gameState.energyMax) * 100;
         energyBar.style.width = `${energyPercentage}%`;
 
-        // Update upgrade levels
         capacityLevel.textContent = gameState.upgrades.capacity.level;
         powerLevel.textContent = gameState.upgrades.power.level;
         speedLevel.textContent = gameState.upgrades.speed.level;
 
-        // Update Staking UI
         stakedAmountDisplay.textContent = `${gameState.stakedAmount.toLocaleString()} TRO`;
     }
 
-    /**
-     * Menampilkan notifikasi singkat di layar.
-     * @param {string} message - Pesan yang akan ditampilkan
-     */
     function showNotification(message) {
         notification.textContent = message;
         notification.classList.add('show');
@@ -239,9 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
 
-    /**
-     * Mengatur logika perpindahan antar tab.
-     */
     function setupTabs() {
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -259,12 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- QUEST & DATA MANAGEMENT ---
-
-    /**
-     * Memeriksa dan memperbarui progress quest.
-     */
     function checkQuests() {
-        // Quest 1: Tap 100 times
         if (!quests.tap100.completed) {
             const progress = (gameState.totalTaps / quests.tap100.target) * 100;
             document.getElementById('quest-tap100-progress').style.width = `${Math.min(progress, 100)}%`;
@@ -276,10 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Quest 2: Upgrade 3 times
         if (!quests.upgrade3.completed) {
             const progress = (gameState.totalUpgrades / quests.upgrade3.target) * 100;
-             document.getElementById('quest-upgrade3-progress').style.width = `${Math.min(progress, 100)}%`;
+            document.getElementById('quest-upgrade3-progress').style.width = `${Math.min(progress, 100)}%`;
             if(gameState.totalUpgrades >= quests.upgrade3.target) {
                 gameState.troBalance += quests.upgrade3.reward;
                 quests.upgrade3.completed = true;
@@ -288,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Quest 3: Stake 50 TRO
         if(!quests.stake50.completed) {
             const progress = (gameState.stakedAmount / quests.stake50.target) * 100;
             document.getElementById('quest-stake50-progress').style.width = `${Math.min(progress, 100)}%`;
@@ -301,17 +253,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Menyimpan state game ke localStorage.
-     */
     function saveGame() {
         localStorage.setItem('taroGameState', JSON.stringify(gameState));
         localStorage.setItem('taroQuests', JSON.stringify(quests));
     }
 
-    /**
-     * Memuat state game dari localStorage.
-     */
     function loadGame() {
         const savedState = localStorage.getItem('taroGameState');
         const savedQuests = localStorage.getItem('taroQuests');
@@ -324,15 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- INITIALIZATION ---
-    
-    /**
-     * Fungsi utama untuk memulai game.
-     */
     function initGame() {
         console.log("🌱 TARO Tap Miner Initializing...");
         loadGame();
         
-        // Event Listeners
         tapArea.addEventListener('click', handleTap);
         document.querySelectorAll('.upgrade-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -345,13 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateUI();
         checkQuests();
 
-        // Mulai interval recharge energi (setiap detik)
         setInterval(rechargeEnergy, 100);
-        
-        // Simpan game secara berkala (setiap 10 detik)
         setInterval(saveGame, 10000);
     }
     
-    // Jalankan game
     initGame();
 });
