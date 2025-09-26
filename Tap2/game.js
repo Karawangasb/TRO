@@ -4,7 +4,10 @@
 
 // --- Firebase Imports (v10.7.1 modular) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  collection, getDocs, query, orderBy, where, limit
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Konfigurasi Firebase ---
 const firebaseConfig = {
@@ -25,8 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const tg = window.Telegram.WebApp;
   tg.expand();
   const userId = tg.initDataUnsafe?.user?.id?.toString() || "guest_" + Math.floor(Math.random() * 1000000);
+  const userName = tg.initDataUnsafe?.user?.first_name || "Player" + userId.slice(-4);
 
-  console.log("👤 UserID:", userId);
+  console.log("👤 UserID:", userId, "| Name:", userName);
 
   // --- GAME STATE DEFAULT ---
   let gameState = {
@@ -44,7 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
     stakedAmount: 0,
     lastUpdate: Date.now(),
     totalTaps: 0,
-    totalUpgrades: 0
+    totalUpgrades: 0,
+    name: userName // <-- tambahkan nama
   };
 
   // --- QUEST SYSTEM DEFAULT ---
@@ -271,13 +276,89 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========================
+  // --- LEADERBOARD FUNCTIONS ---
+  // ========================
+
+  async function fetchLeaderboard() {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, orderBy("troBalance", "desc"), limit(10));
+      const querySnapshot = await getDocs(q);
+
+      const topPlayers = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        topPlayers.push({
+          id: doc.id,
+          troBalance: data.troBalance || 0,
+          name: data.name || "Anonymous"
+        });
+      });
+      return topPlayers;
+    } catch (err) {
+      console.error("❌ Leaderboard fetch error:", err);
+      return [];
+    }
+  }
+
+  async function updateUserRank() {
+    try {
+      const userBalance = gameState.troBalance;
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("troBalance", ">=", userBalance), orderBy("troBalance", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      let rank = 1;
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.troBalance > userBalance) rank++;
+      });
+
+      const rankDisplay = document.getElementById("user-rank");
+      if (rankDisplay) {
+        rankDisplay.textContent = `#${rank} • ${Math.floor(gameState.troBalance).toLocaleString()} TRO`;
+      }
+    } catch (err) {
+      console.error("❌ Rank fetch error:", err);
+    }
+  }
+
+  function renderLeaderboard(topPlayers) {
+    const leaderboardList = document.querySelector("#leaderboard-tab .leaderboard-list");
+    if (!leaderboardList) return;
+
+    leaderboardList.innerHTML = "";
+
+    topPlayers.forEach((player, index) => {
+      const isCurrentUser = player.id === userId;
+      const item = document.createElement("div");
+      item.className = `leaderboard-item ${isCurrentUser ? "current-user" : ""}`;
+      item.innerHTML = `
+        <div>
+          <span class="leaderboard-rank">${index + 1}.</span>
+          ${isCurrentUser ? "You" : (player.name || "Player")}
+        </div>
+        <div>${Math.floor(player.troBalance).toLocaleString()} TRO</div>
+      `;
+      leaderboardList.appendChild(item);
+    });
+
+    updateUserRank();
+  }
+
+  async function loadAndRenderLeaderboard() {
+    const topPlayers = await fetchLeaderboard();
+    renderLeaderboard(topPlayers);
+  }
+
+  // ========================
   // --- FIRESTORE SAVE/LOAD ---
   // ========================
 
   async function saveGame() {
     try {
       const gameStateRef = doc(db, "users", userId);
-      await setDoc(gameStateRef, { ...gameState, quests });
+      await setDoc(gameStateRef, { ...gameState, quests }, { merge: true });
       console.log("💾 Game saved");
     } catch (err) {
       console.error("❌ Save error:", err);
@@ -294,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         quests = { ...quests, ...data.quests };
         console.log("📥 Game loaded:", data);
       } else {
+        // Simpan nama saat pertama kali
         await setDoc(gameStateRef, { ...gameState, quests });
         console.log("🆕 New game created");
       }
@@ -319,6 +401,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTabs();
     updateUI();
     checkQuests();
+
+    // Leaderboard
+    loadAndRenderLeaderboard();
+    setInterval(loadAndRenderLeaderboard, 30000); // refresh tiap 30 detik
 
     setInterval(rechargeEnergy, 1000);
     setInterval(saveGame, 10000);
