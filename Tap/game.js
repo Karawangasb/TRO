@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Akan dimuat dari localStorage jika ada.
     let gameState = {
         troBalance: 0,
-        energy: 1000,
-        energyMax: 1000,
+        energy: 100,
+        energyMax: 100,
         growPower: 1,      // Poin per tap
         rechargeRate: 1,   // Energi per detik
         upgrades: {
