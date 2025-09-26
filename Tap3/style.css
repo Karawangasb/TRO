@@ -272,6 +272,18 @@ body {
     cursor: pointer;
 }
 
+.unstake-btn {
+  margin-top: 10px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.unstake-btn:hover {
+  background: #ff5252;
+}
 /* ----------------------- */
 /* --- HALAMAN LEADERBOARD --- */
 /* ----------------------- */
